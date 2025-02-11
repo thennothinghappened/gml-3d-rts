@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"HLGuiCheckbox",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"HLGuiCheckbox",
+  "parent":{
+    "name":"Interaction",
+    "path":"folders/HLGui/Widgets/Interaction.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

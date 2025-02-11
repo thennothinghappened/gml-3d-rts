@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"HLGuiDropdown",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"HLGuiDropdown",
+  "parent":{
+    "name":"Interaction",
+    "path":"folders/HLGui/Widgets/Interaction.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

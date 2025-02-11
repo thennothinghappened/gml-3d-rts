@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"HLGuiSlider",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"HLGuiSlider",
+  "parent":{
+    "name":"Interaction",
+    "path":"folders/HLGui/Widgets/Interaction.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"HLGUIFeatherHint",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"HLGUIFeatherHint",
+  "parent":{
+    "name":"Utils",
+    "path":"folders/HLGui/Utils.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

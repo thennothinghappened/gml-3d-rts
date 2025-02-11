@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"HLGuiNodeWidget",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"HLGuiNodeWidget",
+  "parent":{
+    "name":"Widgets",
+    "path":"folders/HLGui/Widgets.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

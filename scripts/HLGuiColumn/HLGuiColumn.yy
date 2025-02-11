@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"HLGuiColumn",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"HLGuiColumn",
+  "parent":{
+    "name":"Layout",
+    "path":"folders/HLGui/Widgets/Layout.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
