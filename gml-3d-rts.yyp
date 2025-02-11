@@ -40,7 +40,7 @@
   },
   "name":"gml-3d-rts",
   "resources":[
-    {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
+    {"id":{"name":"rmMain","path":"rooms/rmMain/rmMain.yy",},},
     {"id":{"name":"HLGui","path":"scripts/HLGui/HLGui.yy",},},
     {"id":{"name":"HLGuiBox","path":"scripts/HLGuiBox/HLGuiBox.yy",},},
     {"id":{"name":"HLGuiButton","path":"scripts/HLGuiButton/HLGuiButton.yy",},},
@@ -67,7 +67,7 @@
   "resourceType":"GMProject",
   "resourceVersion":"2.0",
   "RoomOrderNodes":[
-    {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
+    {"roomId":{"name":"rmMain","path":"rooms/rmMain/rmMain.yy",},},
   ],
   "templateType":"game",
   "TextureGroups":[
