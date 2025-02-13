@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"FEATHERHINT",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"FEATHERHINT",
+  "parent":{
+    "name":"Utils",
+    "path":"folders/Scripts/Utils.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}
