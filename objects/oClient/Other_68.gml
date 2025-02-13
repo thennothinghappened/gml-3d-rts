@@ -1,0 +1,23 @@
+/**
+ * @desc 
+ */
+
+if (async_load[? "id"] != self.socket) {
+	exit;
+}
+
+switch (async_load[? "type"]) {
+	
+	case network_type_non_blocking_connect:
+		self.log.debug("Connected!");
+	break;
+	
+	case network_type_data:
+		
+	break;
+	
+	case network_type_disconnect:
+		self.log.debug("Disconnected!");
+	break;
+	
+}
