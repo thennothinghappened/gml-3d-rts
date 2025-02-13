@@ -1,17 +1,25 @@
 
 /**
- * Returns whether we're running on GMRT or not
- * This function relies on a minor change in how global works in the new runtime.
+ * Returns whether we're running on GMRT or not.
  * 
- * @returns {Bool} Whether we're on GMRT.
+ * @returns {Bool}
  */
 function __HLGuiIsGMRT() {
-    
-    // In GMRT the root context (`other` in a script) has `global` as a child
-    // where in the current runtime global is a negative sentinel value.
-    static val = variable_instance_exists(other, "global");
-    return val;
-    
+	
+	static val = undefined;
+	
+	if (val == undefined) {
+		// The current runtime still hasn't received `GM_runtime_type`, so it errors upon access. This sucks since we
+		// thus cannot make this check compile-time.
+		try {
+			val = (GM_runtime_type == "gmrt");
+		} catch (_) {
+			val = false;
+		}
+	}
+	
+	return val;
+	
 }
 __HLGuiIsGMRT();
 
