@@ -41,6 +41,7 @@
   },
   "name":"gml-3d-rts",
   "resources":[
+    {"id":{"name":"oGui","path":"objects/oGui/oGui.yy",},},
     {"id":{"name":"rmMain","path":"rooms/rmMain/rmMain.yy",},},
     {"id":{"name":"Err","path":"scripts/Err/Err.yy",},},
     {"id":{"name":"EventEmitter","path":"scripts/EventEmitter/EventEmitter.yy",},},
