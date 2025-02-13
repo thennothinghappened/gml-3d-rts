@@ -16,7 +16,7 @@ function __log_get() {
  * 
  * @param {Enum.LogSeverity} minPrintSeverity Minimum severity to bother printing to the console.
  */
-function Log(minPrintSeverity = LogSeverity.Info) constructor {
+function Log(minPrintSeverity = LogSeverity.Debug) constructor {
 	
 	enum LogSeverity {
 		Debug,
