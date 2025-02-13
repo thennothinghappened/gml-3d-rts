@@ -41,6 +41,8 @@
   "name":"gml-3d-rts",
   "resources":[
     {"id":{"name":"rmMain","path":"rooms/rmMain/rmMain.yy",},},
+    {"id":{"name":"Err","path":"scripts/Err/Err.yy",},},
+    {"id":{"name":"EventEmitter","path":"scripts/EventEmitter/EventEmitter.yy",},},
     {"id":{"name":"FSM","path":"scripts/FSM/FSM.yy",},},
     {"id":{"name":"HLGui","path":"scripts/HLGui/HLGui.yy",},},
     {"id":{"name":"HLGuiBox","path":"scripts/HLGuiBox/HLGuiBox.yy",},},
