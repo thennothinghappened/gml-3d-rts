@@ -67,6 +67,7 @@
     {"id":{"name":"HLGuiText","path":"scripts/HLGuiText/HLGuiText.yy",},},
     {"id":{"name":"HLGuiWidget","path":"scripts/HLGuiWidget/HLGuiWidget.yy",},},
     {"id":{"name":"HLGuiWindow","path":"scripts/HLGuiWindow/HLGuiWindow.yy",},},
+    {"id":{"name":"Log","path":"scripts/Log/Log.yy",},},
   ],
   "resourceType":"GMProject",
   "resourceVersion":"2.0",
