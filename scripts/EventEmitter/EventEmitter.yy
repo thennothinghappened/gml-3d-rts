@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"EventEmitter",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"Utils",
+    "path":"folders/Scripts/Utils.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
