@@ -46,9 +46,7 @@ function EventEmitter() constructor {
 			throw new Err($"Debug Assertion: Cannot unsubscribe from non-existent event `{event}`");
 		}
 		
-		var index = array_find_index(eventListeners, method({ listener }, function(maybeListener) {
-			return maybeListener == listener;
-		}));
+		var index = array_get_index(eventListeners, listener);
 		
 		if (index < 0) {
 			return false;
