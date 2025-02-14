@@ -7,6 +7,7 @@ readonly ENABLED=true
 readonly INSTANCE_COUNT=2
 readonly PROJECT_NAME="$YYprojectName"
 readonly PROJECT_DIR_NAME="$(echo "$PROJECT_NAME" | tr - _)"
+readonly RUNNER_PLATFORM="$YYPLATFORM_name"
 
 set -e
 
@@ -22,21 +23,33 @@ executable_command=""
 
 # TODO: support non-VM runner.
 # TODO: support other platforms.
-case "$OSTYPE" in
-	linux*)
-		executable_command="
-			cd '$HOME/GameMakerStudio2/vm/$PROJECT_DIR_NAME/' &&
-			nohup './$PROJECT_DIR_NAME.AppImage'				\
-				--appimage-extract-and-run						\
-				-debugoutput '$HOME/GameMakerStudio2/debug.log'	\
-				-output '$HOME/GameMakerStudio2/debug.log' &
-		"
-		;;
+case "$RUNNER_PLATFORM" in
+	"Linux")
+		case "$OSTYPE" in
+			
+			linux*)
+				executable_command="
+					cd '$HOME/GameMakerStudio2/vm/$PROJECT_DIR_NAME/' &&
+					nohup './$PROJECT_DIR_NAME.AppImage'				\
+						--appimage-extract-and-run						\
+						-debugoutput '$HOME/GameMakerStudio2/debug.log'	\
+						-output '$HOME/GameMakerStudio2/debug.log' &
+				"
+			;;
+		
+			*)
+				debug_print "TODO!! No support for multiple instances yet."
+				exit 0
+			;;
+
+		esac
+	;;
 
 	*)
-		debug_print "TODO!! No support for multiple instances yet."
+		debug_print "TODO!! No support for platform '$RUNNER_PLATFORM' yet."
 		exit 0
-		;;
+	;;
+
 esac
 
 debug_print "Starting MP instances!"
