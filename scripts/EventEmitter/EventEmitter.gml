@@ -7,9 +7,11 @@
 function EventEmitter() constructor {
 	
 	self.listeners = {};
+	self.oneTimeListeners = {};
 	
 	for (var i = 0; i < argument_count; i ++) {
 		self.listeners[$ argument[i]] = [];
+		self.oneTimeListeners[$ argument[i]] = [];
 	}
 	
 	/**
@@ -32,6 +34,22 @@ function EventEmitter() constructor {
 	};
 	
 	/**
+	 * Listen to a single emission of a given event.
+	 * 
+	 * @template T
+	 * @param {String} event The event to listen to.
+	 * @param {Function} listener The subscribing callback.
+	 */
+	static once = fucntion(event, listener) {
+		
+		self.on(event, listener);
+		
+		var oneTimeListens = self.oneTimeListeners[$ event];
+		array_push(oneTimeListens, listener);
+		
+	};
+	
+	/**
 	 * Stop listening to the given event.
 	 * 
 	 * @param {String} event The event to stop listening to.
@@ -41,6 +59,7 @@ function EventEmitter() constructor {
 	static off = function(event, listener) {
 		
 		var eventListeners = self.listeners[$ event];
+		var oneTimeListens = self.oneTimeListeners[$ event];
 		
 		if (EVENT_EMITTER_DEBUG_ASSERTIONS && is_undefined(eventListeners)) {
 			throw new Err($"Debug Assertion: Cannot unsubscribe from non-existent event `{event}`");
@@ -50,6 +69,12 @@ function EventEmitter() constructor {
 		
 		if (index < 0) {
 			return false;
+		}
+		
+		var oneTimeIndex = array_get_index(eventListeners, listener);
+		
+		if (oneTimeIndex >= 0) {
+			array_delete(oneTimeListens, oneTimeIndex, 1);
 		}
 		
 		array_delete(eventListeners, index, 1);
@@ -66,14 +91,23 @@ function EventEmitter() constructor {
 	static emit = function(event) {
 		
 		var eventListeners = self.listeners[$ event];
+		var oneTimeListens = self.oneTimeListeners[$ event];
 		
 		if (EVENT_EMITTER_DEBUG_ASSERTIONS && is_undefined(eventListeners)) {
 			throw new Err($"Debug Assertion: Cannot emit non-existent event `{event}`");
 		}
 		
 		if (argument_count == 2) {
-			return array_foreach(eventListeners, method({ data: argument[1] }, function(listener) {
+			return array_foreach(eventListeners, method({ data: argument[1], oneTimeListens}, function(listener) {
+				
 				listener(data);
+				
+				var oneTimeIndex = array_get_index(eventListeners, listener);
+		
+				if (oneTimeIndex >= 0) {
+					array_delete(oneTimeListens, oneTimeIndex, 1);
+				}
+				
 			}));
 		}
 		
@@ -84,11 +118,19 @@ function EventEmitter() constructor {
 		}
 		
 		return array_foreach(eventListeners, method({ data }, function(listener) {
+			
 			if (is_method(listener)) {
 				method_call(listener, data);
 			} else {
 				script_execute_ext(listener, data);
 			}
+			
+			var oneTimeIndex = array_get_index(eventListeners, listener);
+		
+			if (oneTimeIndex >= 0) {
+				array_delete(oneTimeListens, oneTimeIndex, 1);
+			}
+			
 		}));
 		
 	};
