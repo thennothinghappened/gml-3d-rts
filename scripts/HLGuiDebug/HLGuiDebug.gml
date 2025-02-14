@@ -5,6 +5,11 @@
 #macro HLGuiAsserts true
 
 /**
+ * Whether a box should be drawn around each widget's bounding box.
+ */
+#macro HLGuiShowWidgetBounds false
+
+/**
  * Debugging utilities for the HLGui.
  */
 function HLGuiDebug() {
@@ -45,6 +50,23 @@ function HLGuiDebug() {
 			if (!condition) {
 				throw $"Assertion failed!: {message}";
 			}
+		}
+		
+	}
+	
+	/**
+	 * Assert that `lhs` is equal to `rhs`, if debug assertions are enabled. If assertions are not enabled,
+	 * no action is taken.
+	 * 
+	 * @param {Any} lhs The left-side expression.
+	 * @param {Any} rhs The right-side expression.
+	 */
+	static assertEq = function(lhs, rhs) {
+		
+		gml_pragma("forceinline");
+		
+		if (HLGuiAsserts) {
+			assert(lhs == rhs, $"{lhs} == {rhs}");
 		}
 		
 	}
