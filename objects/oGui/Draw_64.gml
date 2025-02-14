@@ -29,7 +29,7 @@ for (var i = array_length(LOG.entries) - 1; i >= 0; i --) {
 	
 	logY -= string_height_ext(text, -1, window_get_width());
 	
-	if (logY <= 0) {
+	if (logY < window_get_height() / 2) {
 		break;
 	}
 	
