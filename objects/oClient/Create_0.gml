@@ -7,8 +7,6 @@ self.log = new LogChannel("client");
 FEATHERHINT self.ip = "localhost";
 FEATHERHINT self.port = 0;
 
-self.log.debug($"Trying to connect to {self.ip}:{self.port}");
-
 self.networkClient = new NetworkClient(network_socket_tcp);
 
 onConnect = function() {
@@ -64,4 +62,5 @@ self.networkClient.events.on("connectFailed", self.onConnectFailed);
 self.networkClient.events.on("disconnect", self.onDisconnect);
 self.networkClient.events.on("data", self.onData);
 
+self.log.debug($"Trying to connect to {self.ip}:{self.port}");
 self.networkClient.connect(self.ip, self.port);
