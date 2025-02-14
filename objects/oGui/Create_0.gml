@@ -43,7 +43,16 @@ self.lobbyPlayerList = new HLGuiColumn([]);
 self.lobbyMainScreen = new HLGuiColumn([
 	new HLGuiBorderBox(8, 8, [
 		new HLGuiText(function() {
-			return $"Port: {oClient.port}";
+		
+			var text = "";
+			
+			if (instance_exists(oServer)) {
+				text += "[Hosting] ";
+			}
+			
+			text += $"IP: {oClient.ip}, Port: {oClient.port}";
+			
+			return text;
 		})
 	]),
 	new HLGuiBorderBox(8, 8, [
