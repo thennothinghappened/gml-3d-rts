@@ -71,7 +71,9 @@ onData = function(client, buffer) {
 	}
 
 	switch (type) {
-		
+		default:
+			self.log.warn($"Unknown message `{type}` from client `{client}`");
+		break;
 	}
 	
 };
