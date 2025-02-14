@@ -17,16 +17,39 @@ self.mainMenuWindow = new HLGuiMenuWindow("Main Menu", 50, 50, 200, true, false,
 			
 		}),
 		new HLGuiButton("Join Server", function() {
-			
-			var ip = get_string("IP", "localhost");
-			var port = DEFAULT_PORT;
-			
-			instance_create_depth(0, 0, 0, oClient, { ip, port });
-			
-			self.lobbyWindow.setVisible(true);
-			
+			self.ipModal.setVisible(true);
 		}),
 	], 8)
+]);
+
+self.serverIp = "localhost";
+
+self.ipModal = new HLGuiMenuWindow("Server IP", window_get_width() / 2 - 150, window_get_height() / 2 - 100, 300, false, true, [
+	new HLGuiColumn([
+		new HLGuiBorderBox(4, 4, [
+			new HLGuiBasicInput(
+				function() { return self.serverIp },
+				function(value) { self.serverIp = value }
+			)
+		]),
+		new HLGuiRow([
+			new HLGuiButton("Cancel", function() {
+				self.ipModal.setVisible(false);
+			}),
+			new HLGuiButton("Join", function() {
+				
+				self.ipModal.setVisible(false);
+				self.lobbyWindow.setVisible(true);
+				
+				var ip = self.serverIp;
+				var port = DEFAULT_PORT;
+			
+				instance_create_depth(0, 0, 0, oClient, { ip, port });
+				self.lobbyWindow.setVisible(true);
+				
+			})
+		], 16)
+	], 16)
 ]);
 
 self.lobbyLoadingScreen = new HLGuiBox([
@@ -69,5 +92,6 @@ self.lobbyWindow = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 200, 10
 
 self.gui = new HLGui([
 	self.mainMenuWindow,
-	self.lobbyWindow
+	self.lobbyWindow,
+	self.ipModal
 ]);
