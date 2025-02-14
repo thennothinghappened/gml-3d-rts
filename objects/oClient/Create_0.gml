@@ -7,21 +7,21 @@ FEATHERHINT self.port = 0;
 
 self.log = new LogChannel("client");
 self.networkClient = new NetworkClient(network_socket_tcp);
+self.events = new EventEmitter("connect", "connectFailed", "disconnect");
 
 onConnect = function() {
 	self.log.info("Connected to the server!");
-	oGui.lobbyLoadingScreen.setVisible(false);
-	oGui.lobbyMainScreen.setVisible(true);
+	self.events.emit("connect");
 };
 
 onConnectFailed = function() {
 	self.log.error("Failed to connect to the server.");
-	oGui.lobbyWindow.setVisible(false);
+	self.events.emit("connectFailed");
 };
 
 onDisconnect = function() {
 	self.log.error("Disconnected from the server.");
-	oGui.lobbyWindow.setVisible(false);
+	self.events.emit("disconnect");
 	instance_destroy(self);
 };
 
