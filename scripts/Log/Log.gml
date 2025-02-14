@@ -53,7 +53,7 @@ function Log(minPrintSeverity = LogSeverity.Debug) constructor {
 			"FATAL"
 		];
 		
-		var time = entry[LogEntryIndex.Time];
+		var time = date_time_string(entry[LogEntryIndex.Time]);
 		var severity = severityNames[entry[LogEntryIndex.Severity]];
 		var source = entry[LogEntryIndex.Source];
 		var message = entry[LogEntryIndex.Message];
@@ -72,7 +72,7 @@ function Log(minPrintSeverity = LogSeverity.Debug) constructor {
 	static log = function(severity, source, message) {
 		
 		var entry = array_create(4);
-		entry[LogEntryIndex.Time] = current_time;
+		entry[LogEntryIndex.Time] = date_current_datetime();
 		entry[LogEntryIndex.Severity] = severity;
 		entry[LogEntryIndex.Source] = source;
 		entry[LogEntryIndex.Message] = message;
