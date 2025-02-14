@@ -67,74 +67,6 @@ function HLGuiWidget(visible = true) constructor {
 	}
 	
 	/**
-	 * Locate the parent widget, or `undefined`, that satisfies the given predicate.
-	 * 
-	 * @param {Function} predicate `(Struct.HLGuiNodeWidget) -> Bool` | The predicate with which to determine if a parent node is valid.
-	 * @returns {Struct.HLGuiNodeWidget|undefined}
-	 */
-	static findParentSatisfying = function(predicate) {
-		
-		var node = self;
-		
-		while (node.parent != undefined) {
-			
-			node = node.parent;
-			
-			if (predicate(node)) {
-				return node;
-			}
-			
-		}
-		
-		return undefined;
-		
-	};
-	
-	/**
-	 * Query whether this widget is visible in the tree.
-	 * @returns {Bool}
-	 */
-	static isVisibleInTree = function() {
-		
-		if (!self.visible) {
-			return false;
-		}
-		
-		if (self.parent == undefined) {
-			return true;
-		}
-		
-		return self.findParentSatisfying(function(parent) {
-			return parent.visible == false;
-		}) == undefined;
-		
-	};
-	
-	/**
-	 * Return whether this widget is a child of the given widget.
-	 * 
-	 * @param {Struct.HLGuiNodeWidget} widget The node widget that may be a parent of this widget.
-	 * @returns {Bool}
-	 */
-	static isChildOf = function(widget) {
-		
-		var node = self;
-		
-		while (node.parent != undefined) {
-			
-			node = node.parent;
-			
-			if (node == widget) {
-				return true;
-			}
-			
-		}
-		
-		return false;
-		
-	};
-	
-	/**
 	 * Return the measured height of this widget for the given size.
 	 * If the cached value does not exist, or is in-applicable, then this widget is re-measured.
 	 * 
@@ -165,6 +97,27 @@ function HLGuiWidget(visible = true) constructor {
 		
 		if (self.parent != undefined) {
 			self.parent.invalidateLayout();
+		}
+		
+	};
+	
+	/**
+	 * Set whether this widget is visible. Changes to the visibility of a widget bubble upwards and invalidate the layout
+	 * of parent widgets.
+	 * 
+	 * @param {Bool} visible Whether this widget should be visible.
+	 */
+	static setVisible = function(visible) {
+		
+		if (self.visible == visible) {
+			return;
+		}
+		
+		self.visible = visible;
+		self.invalidateLayout();
+		
+		if (!is_undefined(self.gui)) {
+			self.gui.__notifyVisibilityChange();
 		}
 		
 	};
