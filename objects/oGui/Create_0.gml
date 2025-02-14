@@ -62,7 +62,7 @@ self.lobbyMainScreen = new HLGuiColumn([
 
 self.lobbyMainScreen.setVisible(false);
 
-self.lobbyWindow = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 200, 100, 200, false, false, [
+self.lobbyWindow = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 200, 100, 400, false, false, [
 	self.lobbyLoadingScreen,
 	self.lobbyMainScreen
 ]);
