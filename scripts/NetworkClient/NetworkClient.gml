@@ -28,7 +28,7 @@ function NetworkClient(protocol) constructor {
 	 * #### `connectFailed`: `() -> Undefined`
 	 * Sent upon failure to connect to a server.
 	 * 
-	 * #### `data`: `(Id.Buffer) -> Undefined`
+	 * #### `data`: `(buffer: Id.Buffer) -> Undefined`
 	 * Sent upon receiving data from the server. The buffer provided is to be considered read-only, and is
 	 * managed by GameMaker - do not delete it.
 	 * 
