@@ -3,6 +3,7 @@
  */
 
 self.log = new LogChannel("gui");
+self.log.info("Hello!");
 
 self.mainMenuWindow = new HLGuiMenuWindow("Main Menu", 50, 50, 200, true, false, [
 	new HLGuiColumn([
