@@ -9,9 +9,17 @@ if (async_load[? "id"] != self.socket) {
 switch (async_load[? "type"]) {
 	
 	case network_type_non_blocking_connect:
-		self.log.debug("Connected!");
-		oGui.lobbyLoadingScreen.setVisible(false);
-		oGui.lobbyMainScreen.setVisible(true);
+		
+		if (async_load[? "succeeded"]) {
+			self.log.debug("Connected!");
+			oGui.lobbyLoadingScreen.setVisible(false);
+			oGui.lobbyMainScreen.setVisible(true);
+		} else {
+			self.log.debug("Failed to connect.");
+			instance_destroy(self);
+			exit;
+		}
+	
 	break;
 	
 	case network_type_data:
