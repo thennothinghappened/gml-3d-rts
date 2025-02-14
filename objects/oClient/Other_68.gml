@@ -10,6 +10,8 @@ switch (async_load[? "type"]) {
 	
 	case network_type_non_blocking_connect:
 		self.log.debug("Connected!");
+		oGui.lobbyLoadingScreen.setVisible(false);
+		oGui.lobbyMainScreen.setVisible(true);
 	break;
 	
 	case network_type_data:
@@ -18,6 +20,7 @@ switch (async_load[? "type"]) {
 	
 	case network_type_disconnect:
 		self.log.debug("Disconnected!");
+		oGui.lobbyWindow.setVisible(false);
 	break;
 	
 }
