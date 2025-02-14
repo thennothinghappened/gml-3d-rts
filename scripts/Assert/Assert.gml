@@ -34,7 +34,19 @@ function Assert() {
 	 */
 	static eq = function(lhs, rhs) {
 		if (lhs != rhs) {
-			throw new Err($"Assertion Failed: {lhs} does not equal {rhs}");
+			throw new Err($"Assertion Failed: {lhs} should equal {rhs}");
+		}
+	};
+	
+	/**
+	 * Assert that `lhs` is not equal to `rhs`.
+	 * 
+	 * @param {Any} lhs
+	 * @param {Any} rhs
+	 */
+	static neq = function(lhs, rhs) {
+		if (lhs == rhs) {
+			throw new Err($"Assertion Failed: {lhs} should not equal {rhs}");
 		}
 	};
 	
