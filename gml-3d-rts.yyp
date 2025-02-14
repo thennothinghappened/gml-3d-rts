@@ -81,6 +81,7 @@
     {"id":{"name":"HLGuiWindow","path":"scripts/HLGuiWindow/HLGuiWindow.yy",},},
     {"id":{"name":"Log","path":"scripts/Log/Log.yy",},},
     {"id":{"name":"NetworkClient","path":"scripts/NetworkClient/NetworkClient.yy",},},
+    {"id":{"name":"NetworkServer","path":"scripts/NetworkServer/NetworkServer.yy",},},
     {"id":{"name":"realOrUndefined","path":"scripts/realOrUndefined/realOrUndefined.yy",},},
     {"id":{"name":"sprTempBackground","path":"sprites/sprTempBackground/sprTempBackground.yy",},},
   ],

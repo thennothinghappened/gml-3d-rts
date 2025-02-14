@@ -47,9 +47,9 @@ self.networkClient.events.on("data", function(buffer) {
 
 	var type = json[$ "type"];
 
-	//if (!is_string(type)) {
-		//throw new Err("TODO: server sent a non-string packet type!");
-	//}
+	if (!is_string(type)) {
+		throw new Err("TODO: server sent a non-string packet type!");
+	}
 
 	switch (type) {
 		default:

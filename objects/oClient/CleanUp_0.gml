@@ -1,9 +1,5 @@
 /**
- * @desc Hopefully send out a disconnection message before we go. Presumably a forced quit is occurring.
+ * @desc Free the network client.
  */
 
-var message = { type: "disconnect" };
-var text = json_stringify(message);
-
-self.networkClient.sendText(text);
 self.networkClient.dispose();
