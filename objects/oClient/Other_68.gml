@@ -21,6 +21,8 @@ switch (async_load[? "type"]) {
 	case network_type_disconnect:
 		self.log.debug("Disconnected!");
 		oGui.lobbyWindow.setVisible(false);
+		oGui.lobbyLoadingScreen.setVisible(true);
+		oGui.lobbyMainScreen.setVisible(false);
 	break;
 	
 }
