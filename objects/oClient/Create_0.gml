@@ -11,24 +11,24 @@ self.log.debug($"Trying to connect to {self.ip}:{self.port}");
 
 self.networkClient = new NetworkClient(network_socket_tcp);
 
-self.networkClient.events.on("connect", function() {
+onConnect = function() {
 	self.log.info("Connected to the server!");
 	oGui.lobbyLoadingScreen.setVisible(false);
 	oGui.lobbyMainScreen.setVisible(true);
-});
+};
 
-self.networkClient.events.on("connectFailed", function() {
+onConnectFailed = function() {
 	self.log.error("Failed to connect to the server.");
 	oGui.lobbyWindow.setVisible(false);
-});
+};
 
-self.networkClient.events.on("disconnect", function() {
+onDisconnect = function() {
 	self.log.error("Disconnected from the server.");
 	oGui.lobbyWindow.setVisible(false);
 	instance_destroy(self);
-});
+};
 
-self.networkClient.events.on("data", function(buffer) {
+onData = function(buffer) {
 	
 	var text = buffer_read(buffer, buffer_text);
 	var json;
@@ -57,6 +57,11 @@ self.networkClient.events.on("data", function(buffer) {
 		break;
 	}
 	
-});
+};
+
+self.networkClient.events.on("connect", self.onConnect);
+self.networkClient.events.on("connectFailed", self.onConnectFailed);
+self.networkClient.events.on("disconnect", self.onDisconnect);
+self.networkClient.events.on("data", self.onData);
 
 self.networkClient.connect(self.ip, self.port);
