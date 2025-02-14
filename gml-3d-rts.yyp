@@ -43,6 +43,7 @@
   "name":"gml-3d-rts",
   "resources":[
     {"id":{"name":"oClient","path":"objects/oClient/oClient.yy",},},
+    {"id":{"name":"oGame","path":"objects/oGame/oGame.yy",},},
     {"id":{"name":"oGui","path":"objects/oGui/oGui.yy",},},
     {"id":{"name":"oNetworkManager","path":"objects/oNetworkManager/oNetworkManager.yy",},},
     {"id":{"name":"oServer","path":"objects/oServer/oServer.yy",},},
