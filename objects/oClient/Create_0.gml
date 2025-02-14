@@ -2,11 +2,10 @@
  * @desc 
  */
 
-self.log = new LogChannel("client");
-
 FEATHERHINT self.ip = "localhost";
 FEATHERHINT self.port = 0;
 
+self.log = new LogChannel("client");
 self.networkClient = new NetworkClient(network_socket_tcp);
 
 onConnect = function() {
