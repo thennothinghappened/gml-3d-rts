@@ -24,15 +24,18 @@ self.mainMenuWindow = new HLGuiMenuWindow("Main Menu", 50, 50, 200, true, false,
 ]);
 
 self.serverIp = "localhost";
+self.serverPort = $"{DEFAULT_PORT}";
 
-self.ipModal = new HLGuiMenuWindow("Server IP", window_get_width() / 2 - 150, window_get_height() / 2 - 100, 300, false, true, [
+self.ipModal = new HLGuiMenuWindow("Connect to a Server", window_get_width() / 2 - 150, window_get_height() / 2 - 100, 300, false, true, [
 	new HLGuiColumn([
-		new HLGuiBorderBox(4, 4, [
-			new HLGuiBasicInput(
-				function() { return self.serverIp },
-				function(value) { self.serverIp = value }
-			)
-		]),
+		HLGuiInput("IP",
+			function() { return self.serverIp },
+			function(value) { self.serverIp = value }
+		),
+		HLGuiInput("Port",
+			function() { return self.serverPort },
+			function(value) { self.serverPort = string_digits(value) }
+		),
 		new HLGuiRow([
 			new HLGuiButton("Cancel", function() {
 				self.ipModal.setVisible(false);
@@ -43,8 +46,8 @@ self.ipModal = new HLGuiMenuWindow("Server IP", window_get_width() / 2 - 150, wi
 				self.lobbyWindow.setVisible(true);
 				
 				var ip = self.serverIp;
-				var port = DEFAULT_PORT;
-			
+				var port = realOrUndefined(self.serverPort) ?? DEFAULT_PORT;
+				
 				instance_create_depth(0, 0, 0, oClient, { ip, port });
 				self.lobbyWindow.setVisible(true);
 				
