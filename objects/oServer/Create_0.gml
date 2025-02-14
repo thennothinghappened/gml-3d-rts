@@ -17,6 +17,8 @@ if (self.socket < 0) {
 	throw new Err($"TODO: Unhandled failure to bind server to port {self.port}!");
 }
 
+self.log.debug($"Up on port {self.port}");
+
 /**
  * Handle a client's disconnection.
  * @param {Id.Socket} client
