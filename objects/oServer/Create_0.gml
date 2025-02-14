@@ -16,3 +16,12 @@ self.socket = network_create_server(network_socket_ws, self.port, 8);
 if (self.socket < 0) {
 	throw new Err($"TODO: Unhandled failure to bind server to port {self.port}!");
 }
+
+/**
+ * Handle a client's disconnection.
+ * @param {Id.Socket} client
+ */
+onDisconnect = function(client) {
+	self.log.debug($"`{client}` is disconnecting");
+	array_delete(self.clients, array_get_index(self.clients, client), 1);
+};
