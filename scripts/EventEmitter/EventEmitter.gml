@@ -61,9 +61,9 @@ function EventEmitter() constructor {
 	 * Emit the given event with the given arguments.
 	 * 
 	 * @param {String} event The event to emit.
-	 * @param {Any} data Data to be emitted with the event.
+	 * @param {Any} ... Data to be emitted with the event.
 	 */
-	static emit = function(event, data) {
+	static emit = function(event) {
 		
 		var eventListeners = self.listeners[$ event];
 		
@@ -71,8 +71,24 @@ function EventEmitter() constructor {
 			throw new Err($"Debug Assertion: Cannot emit non-existent event `{event}`");
 		}
 		
-		array_foreach(eventListeners, method({ data }, function(listener) {
-			listener(data);
+		if (argument_count == 2) {
+			return array_foreach(eventListeners, method({ data: argument[1] }, function(listener) {
+				listener(data);
+			}));
+		}
+		
+		var data = array_create(argument_count - 1);
+		
+		for (var i = 1; i < argument_count; i ++) {
+			data[i - 1] = argument[i];
+		}
+		
+		return array_foreach(eventListeners, method({ data }, function(listener) {
+			if (is_method(listener)) {
+				method_call(listener, data);
+			} else {
+				script_execute_ext(listener, data);
+			}
 		}));
 		
 	};
