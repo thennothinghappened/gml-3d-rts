@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"NetworkClient",
   "parent":{
-    "name":"Scripts",
-    "path":"folders/Scripts.yy",
+    "name":"Transport",
+    "path":"folders/Scripts/Network/Transport.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
