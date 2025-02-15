@@ -40,7 +40,7 @@ function EventEmitter() constructor {
 	 * @param {String} event The event to listen to.
 	 * @param {Function} listener The subscribing callback.
 	 */
-	static once = fucntion(event, listener) {
+	static once = function(event, listener) {
 		
 		self.on(event, listener);
 		
@@ -102,7 +102,7 @@ function EventEmitter() constructor {
 				
 				listener(data);
 				
-				var oneTimeIndex = array_get_index(eventListeners, listener);
+				var oneTimeIndex = array_get_index(oneTimeListens, listener);
 		
 				if (oneTimeIndex >= 0) {
 					array_delete(oneTimeListens, oneTimeIndex, 1);
@@ -117,7 +117,7 @@ function EventEmitter() constructor {
 			data[i - 1] = argument[i];
 		}
 		
-		return array_foreach(eventListeners, method({ data }, function(listener) {
+		return array_foreach(eventListeners, method({ data, oneTimeListens }, function(listener) {
 			
 			if (is_method(listener)) {
 				method_call(listener, data);
@@ -125,7 +125,7 @@ function EventEmitter() constructor {
 				script_execute_ext(listener, data);
 			}
 			
-			var oneTimeIndex = array_get_index(eventListeners, listener);
+			var oneTimeIndex = array_get_index(oneTimeListens, listener);
 		
 			if (oneTimeIndex >= 0) {
 				array_delete(oneTimeListens, oneTimeIndex, 1);
