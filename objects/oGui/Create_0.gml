@@ -12,7 +12,8 @@ self.data = {
 	joinServerModal: {
 		ip: "localhost",
 		port: $"{DEFAULT_PORT}"
-	}
+	},
+	client: undefined
 };
 
 self.mainMenuWindow = new HLGuiMenuWindow("Main Menu", 50, 50, 200, false, false, [
@@ -82,26 +83,27 @@ self.fsm.state("T.startServer", {
 		var port = realOrUndefined(self.data.setupServerModal.port) ?? DEFAULT_PORT;
 			
 		instance_create_depth(0, 0, 0, oServer, { port });
-		instance_create_depth(0, 0, 0, oClient, { ip: "localhost", port });
 		
-		oClient.events.once("connect", function() {
+		self.data.client = new Client();
+		
+		self.data.client.events.once("connect", function() {
 			self.fsm.change("serverLobbyScreen");
 		});
 		
-		oClient.events.once("connectFailed", function() {
+		self.data.client.events.once("connectFailed", function() {
 			
 			with (oServer) {
 				instance_destroy(self);
 			}
 			
-			with (oClient) {
-				instance_destroy(self);
-			}
+			self.data.client.dispose();
 			
 			self.log.error("Failed to host a server!");
 			self.fsm.change("mainMenu");
 			
 		});
+		
+		self.data.client.connect("localhost", port);
 		
 		return "connectingScreen";
 		
@@ -127,7 +129,7 @@ self.serverLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 3
 			new HLGuiRow([
 				HLGuiLabel("Hosting!"),
 				new HLGuiText(function() {
-					return $"IP: {oClient.ip}, Port: {oClient.port}";
+					return $"Port: {self.data.setupServerModal.port}";
 				})
 			])
 		]),
@@ -175,16 +177,18 @@ self.fsm.state("T.clientConnect", {
 		var ip = self.data.joinServerModal.ip;
 		var port = realOrUndefined(self.data.joinServerModal.port) ?? DEFAULT_PORT;
 		
-		instance_create_depth(0, 0, 0, oClient, { ip, port });
+		self.data.client = new Client();
 		
-		oClient.events.once("connect", function() {
+		self.data.client.events.once("connect", function() {
 			self.fsm.change("clientLobbyScreen");
 		});
 		
-		oClient.events.once("connectFailed", function() {
+		self.data.client.events.once("connectFailed", function() {
 			self.log.error("Failed to connect to the server!");
 			self.fsm.change("T.clientDisconnect");
 		});
+		
+		self.data.client.connect(ip, port);
 		
 		return "connectingScreen";
 		
@@ -193,8 +197,12 @@ self.fsm.state("T.clientConnect", {
 
 self.fsm.state("T.clientDisconnect", {
 	enter: function() {
-		instance_destroy(oClient);
+		
+		self.data.client.dispose();
+		delete self.data.client;
+		
 		return "mainMenu";
+		
 	}
 });
 
@@ -215,7 +223,7 @@ self.clientLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 3
 	new HLGuiColumn([
 		new HLGuiBorderBox(8, 8, [
 			new HLGuiText(function() {
-				return $"IP: {oClient.ip}, Port: {oClient.port}";
+				return $"IP: {self.data.joinServerModal.ip}, Port: {self.data.joinServerModal.port}";
 			})
 		]),
 		new HLGuiBorderBox(8, 8, [
