@@ -121,7 +121,7 @@ self.fsm.state("serverLobbyScreen", {
 });
 
 self.serverLobbyPlayerList = new HLGuiColumn([]);
-self.serverLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 200, 100, 400, false, false, [
+self.serverLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 300, 100, 600, false, false, [
 	new HLGuiColumn([
 		new HLGuiBorderBox(8, 8, [
 			new HLGuiRow([
@@ -211,7 +211,7 @@ self.fsm.state("clientLobbyScreen", {
 });
 
 self.clientLobbyPlayerList = new HLGuiColumn([]);
-self.clientLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 200, 100, 400, false, false, [
+self.clientLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 300, 100, 600, false, false, [
 	new HLGuiColumn([
 		new HLGuiBorderBox(8, 8, [
 			new HLGuiText(function() {
