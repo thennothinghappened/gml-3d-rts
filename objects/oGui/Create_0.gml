@@ -49,6 +49,18 @@ self.fsm.state("mainMenu", {
 	
 });
 
+self.fsm.state("connectingScreen", {
+	
+	enter: function() {
+		self.lobbyLoadingScreen.setVisible(true);
+	},
+	
+	leave: function() {
+		self.lobbyLoadingScreen.setVisible(false);
+	}
+	
+});
+
 #endregion
 #region Server Hosting
 
@@ -91,21 +103,9 @@ self.fsm.state("T.startServer", {
 			
 		});
 		
-		return "serverConnectingScreen";
+		return "connectingScreen";
 		
 	}
-});
-
-self.fsm.state("serverConnectingScreen", {
-	
-	enter: function() {
-		self.lobbyLoadingScreen.setVisible(true);
-	},
-	
-	leave: function() {
-		self.lobbyLoadingScreen.setVisible(false);
-	}
-	
 });
 
 self.fsm.state("serverLobbyScreen", {
@@ -176,7 +176,17 @@ self.fsm.state("T.clientConnect", {
 		var port = realOrUndefined(self.data.joinServerModal.port) ?? DEFAULT_PORT;
 		
 		instance_create_depth(0, 0, 0, oClient, { ip, port });
-		return "clientLobbyScreen";
+		
+		oClient.events.once("connect", function() {
+			self.fsm.change("clientLobbyScreen");
+		});
+		
+		oClient.events.once("connectFailed", function() {
+			self.log.error("Failed to connect to the server!");
+			self.fsm.change("T.clientDisconnect");
+		});
+		
+		return "connectingScreen";
 		
 	}
 });
