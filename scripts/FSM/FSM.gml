@@ -27,6 +27,10 @@ function FSM(initialStateName) constructor {
 	 * produces any necessary transitional side effects, and this method returns the name of the desired
 	 * "end" state.
 	 * 
+	 * The `leave` event is passed the name of the next target state, so it may apply any relevant logic.
+	 * This is an alternative option to transitions, where it makes sense to keep logic contained to the
+	 * state itself.
+	 * 
 	 * ### Exceptions
 	 * 
 	 * Throws if the name is taken.
@@ -112,7 +116,7 @@ function FSM(initialStateName) constructor {
 		var leave = currentState[$ "leave"];
 		
 		if (!is_undefined(leave)) {
-			leave();
+			leave(newStateName);
 		}
 		
 		var newState = self.states[$ self.currentStateName];
