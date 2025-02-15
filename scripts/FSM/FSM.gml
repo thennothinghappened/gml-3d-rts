@@ -88,12 +88,20 @@ function FSM(initialStateName) constructor {
 	/**
 	 * Change to a new state.
 	 * 
+	 * ### Exceptions
+	 * 
+	 * Throws if the new state does not exist.
+	 * 
 	 * @param {String} newStateName
 	 */
 	static change = function(newStateName) {
 		
 		if (newStateName == self.currentStateName) {
 			return self.currentStateName;
+		}
+		
+		if (!struct_exists(self.states, newStateName)) {
+			throw new Err($"Cannot change to non-existent state `{newStateName}`");
 		}
 		
 		var currentState = self.states[$ self.currentStateName];
