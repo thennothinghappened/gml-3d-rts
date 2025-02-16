@@ -4,7 +4,7 @@
 
 self.gui.draw();
 
-var logY = window_get_height();
+var logY = display_get_gui_height();
 
 HLGuiDrawUtils.setVAlign(fa_bottom);
 
@@ -24,12 +24,12 @@ for (var i = array_length(LOG.entries) - 1; i >= 0; i --) {
 	}
 	
 	HLGuiDrawUtils.setColour(colour);
-	draw_text_ext(0, logY, text, -1, window_get_width());
+	draw_text_ext(0, logY, text, -1, display_get_gui_width());
 	HLGuiDrawUtils.resetColour();
 	
-	logY -= string_height_ext(text, -1, window_get_width());
+	logY -= string_height_ext(text, -1, display_get_gui_width());
 	
-	if (logY < window_get_height() / 2) {
+	if (logY < display_get_gui_height() / 2) {
 		break;
 	}
 	

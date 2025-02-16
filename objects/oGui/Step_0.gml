@@ -2,4 +2,4 @@
  * @desc 
  */
 
-self.gui.update(0, 0, window_get_width(), window_get_height());
+self.gui.update(0, 0, display_get_gui_width(), display_get_gui_height());

@@ -28,7 +28,7 @@ self.mainMenuWindow = new HLGuiMenuWindow("Main Menu", 50, 50, 200, false, false
 	], 8)
 ]);
 
-self.lobbyLoadingScreen = new HLGuiMenuWindow("Connecting!", window_get_width() / 2 - 150, window_get_height() / 2 - 100, 300, false, false, [
+self.lobbyLoadingScreen = new HLGuiMenuWindow("Connecting!", display_get_gui_width() / 2 - 150, display_get_gui_height() / 2 - 100, 300, false, false, [
 	new HLGuiText(function() {
 		var dotCount = ceil((sin(current_time / 240) + 1) * 3);
 		return $"Connecting{string_repeat(".", dotCount)}";
@@ -121,7 +121,7 @@ self.fsm.state("serverLobbyScreen", {
 });
 
 self.serverLobbyPlayerList = new HLGuiColumn([]);
-self.serverLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 300, 100, 600, false, false, [
+self.serverLobbyScreen = new HLGuiMenuWindow("Lobby", display_get_gui_width() / 2 - 300, 100, 600, false, false, [
 	new HLGuiColumn([
 		new HLGuiBorderBox(8, 8, [
 			new HLGuiRow([
@@ -137,7 +137,7 @@ self.serverLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 3
 	])
 ]);
 
-self.setupServerModal = new HLGuiMenuWindow("Host a Server", window_get_width() / 2 - 150, window_get_height() / 2 - 100, 300, false, false, [
+self.setupServerModal = new HLGuiMenuWindow("Host a Server", display_get_gui_width() / 2 - 150, display_get_gui_height() / 2 - 100, 300, false, false, [
 	new HLGuiColumn([
 		HLGuiInput("Port",
 			function() { return self.data.setupServerModal.port },
@@ -217,7 +217,7 @@ self.fsm.state("clientLobbyScreen", {
 });
 
 self.clientLobbyPlayerList = new HLGuiColumn([]);
-self.clientLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 300, 100, 600, false, false, [
+self.clientLobbyScreen = new HLGuiMenuWindow("Lobby", display_get_gui_width() / 2 - 300, 100, 600, false, false, [
 	new HLGuiColumn([
 		new HLGuiBorderBox(8, 8, [
 			new HLGuiText(function() {
@@ -230,7 +230,7 @@ self.clientLobbyScreen = new HLGuiMenuWindow("Lobby", window_get_width() / 2 - 3
 	])
 ]);
 
-self.joinServerModal = new HLGuiMenuWindow("Connect to a Server", window_get_width() / 2 - 150, window_get_height() / 2 - 100, 300, false, false, [
+self.joinServerModal = new HLGuiMenuWindow("Connect to a Server", display_get_gui_width() / 2 - 150, display_get_gui_height() / 2 - 100, 300, false, false, [
 	new HLGuiColumn([
 		HLGuiInput("IP",
 			function() { return self.data.joinServerModal.ip },
