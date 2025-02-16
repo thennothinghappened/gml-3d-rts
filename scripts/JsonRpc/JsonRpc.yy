@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Err",
+  "%Name":"JsonRpc",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Err",
+  "name":"JsonRpc",
   "parent":{
-    "name":"Errors",
-    "path":"folders/Scripts/Utils/Errors.yy",
+    "name":"Transport",
+    "path":"folders/Scripts/Network/Transport.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

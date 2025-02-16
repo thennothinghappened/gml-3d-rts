@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"Err",
+  "%Name":"NotImplemented",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Err",
+  "name":"NotImplemented",
   "parent":{
     "name":"Errors",
     "path":"folders/Scripts/Utils/Errors.yy",

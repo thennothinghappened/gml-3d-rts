@@ -8,6 +8,27 @@ function Client(networkClient) constructor {
 	
 	CLASS_LOG;
 	
+	/**
+	 * List of types of messages that can be recieved from the server.
+	 * @type {Array<typeof Struct.Message>}
+	 */
+	static incomingMessageTypes = [
+		ServerJoinInfo
+	];
+	
+	/**
+	 * Mapping of message type names to their corresponding class.
+	 * @type {Record<String, typeof Struct.Message>}
+	 */
+	static incomingMessageTypesMap = {};
+	
+	// Initialise the message types map.
+	if (struct_names_count(incomingMessageTypesMap) == 0) {
+		array_foreach(incomingMessageTypes, function(messageType) {
+			incomingMessageTypesMap[$ script_get_name(messageType)] = messageType;
+		});
+	}
+	
 	self.events = new EventEmitter("connect", "connectFailed", "disconnect");
 	
 	self.networkClient = networkClient;
@@ -36,8 +57,10 @@ function Client(networkClient) constructor {
 	 * @ignore
 	 */
 	static onConnect = function() {
-		log.info("Connected to the server!");
-		self.events.emit("connect");
+		
+		var message = new ClientJoinInfo(oGame.prefs.username);
+		self.networkClient.sendText(message.toJson());
+		
 	};
 	
 	/**
@@ -72,9 +95,10 @@ function Client(networkClient) constructor {
 		try {
 			json = json_parse(text);
 		} catch (_) {
-			throw new Err("TODO: Failed to parse inbound message from the server!");
+			log.error(new Err("TODO: Failed to parse inbound message from the server!"));
+			return;
 		}
-	
+		
 		if (!is_struct(json)) {
 			throw new Err("TODO: server sent a non-struct packet!");
 		}

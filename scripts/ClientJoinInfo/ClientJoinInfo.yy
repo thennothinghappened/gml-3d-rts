@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Err",
+  "%Name":"ClientJoinInfo",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Err",
+  "name":"ClientJoinInfo",
   "parent":{
-    "name":"Errors",
-    "path":"folders/Scripts/Utils/Errors.yy",
+    "name":"Messages",
+    "path":"folders/Scripts/Network/Messaging/Messages.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",
