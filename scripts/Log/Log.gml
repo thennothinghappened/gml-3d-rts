@@ -76,7 +76,7 @@ function Log(minPrintSeverity = LogSeverity.Debug) constructor {
 		entry[LogEntryIndex.Time] = date_current_datetime();
 		entry[LogEntryIndex.Severity] = severity;
 		entry[LogEntryIndex.Source] = source;
-		entry[LogEntryIndex.Message] = message;
+		entry[LogEntryIndex.Message] = string(message);
 		
 		array_push(self.entries, entry);
 		
