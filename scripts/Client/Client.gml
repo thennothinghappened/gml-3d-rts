@@ -2,11 +2,11 @@
 /**
  * A game client!
  * 
- * @param {Struct.NetworkClient} networkClient The underlying network transport client. Defaults to using TCP.
+ * @param {Struct.NetworkClient} networkClient The underlying network transport client.
  */
-function Client(networkClient = new NetworkClient(network_socket_tcp)) constructor {
+function Client(networkClient) constructor {
 	
-	static log = new LogChannel("client");
+	CLASS_LOG;
 	
 	self.events = new EventEmitter("connect", "connectFailed", "disconnect");
 	
@@ -17,13 +17,10 @@ function Client(networkClient = new NetworkClient(network_socket_tcp)) construct
 	self.networkClient.events.on("data", method(self, self.onData));
 	
 	/**
-	 * Attempt to connect to the server hosted at `ip:port`.
-	 * 
-	 * @param {String} ip The IP of the server.
-	 * @param {Real} port The port the server is running on.
+	 * Attempt to create a connection with the network client.
 	 */
-	static connect = function(ip, port) {
-		self.networkClient.connect(ip, port);
+	static connect = function() {
+		self.networkClient.connect();
 	};
 	
 	/**

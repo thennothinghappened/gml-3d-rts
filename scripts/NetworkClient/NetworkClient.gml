@@ -1,10 +1,14 @@
 
 /**
- * @param {Constant.SocketType} protocol
+ * @param {Constant.SocketType} protocol The network protocol to use.
+ * @param {String} ip The IP of the server to connect to.
+ * @param {Real} port The port of the server to connect to.
  */
-function NetworkClient(protocol) constructor {
+function NetworkClient(protocol, ip, port) constructor {
 	
 	self.protocol = protocol;
+	self.ip = ip;
+	self.port = port;
 	
 	/**
 	 * The network socket associated with this client.
@@ -65,17 +69,14 @@ function NetworkClient(protocol) constructor {
 	});
 	
 	/**
-	 * Attempt to connect to the given IP and Port.
-	 * 
-	 * @param {String} ip
-	 * @param {Real} port
+	 * Attempt to connect to the given IP and Port specified for this client.
 	 */
-	static connect = function(ip, port) {
+	static connect = function() {
 		
 		Assert.cond(!self.connected, "Client should not be already connected");
 		
 		self.connected = false;
-		network_connect_async(self.socket, ip, port);
+		network_connect_async(self.socket, self.ip, self.port);
 		
 	};
 	

@@ -1,5 +1,6 @@
 
 #macro LOG __log_get()
+#macro CLASS_LOG static log = new LogChannel(instanceof(self))
 
 /**
  * Whether to print game logs to STDOUT.

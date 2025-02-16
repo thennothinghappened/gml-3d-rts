@@ -13,6 +13,7 @@ self.data = {
 		ip: "localhost",
 		port: $"{DEFAULT_PORT}"
 	},
+	server: undefined,
 	client: undefined
 };
 
@@ -81,10 +82,9 @@ self.fsm.state("T.startServer", {
 	enter: function() {
 		
 		var port = realOrUndefined(self.data.setupServerModal.port) ?? DEFAULT_PORT;
-			
-		instance_create_depth(0, 0, 0, oServer, { port });
 		
-		self.data.client = new Client();
+		self.data.server = new Server(new NetworkServer(network_socket_tcp, port, 8));
+		self.data.client = new Client(new NetworkClient(network_socket_tcp, "localhost", port));
 		
 		self.data.client.events.once("connect", function() {
 			self.fsm.change("serverLobbyScreen");
@@ -92,10 +92,7 @@ self.fsm.state("T.startServer", {
 		
 		self.data.client.events.once("connectFailed", function() {
 			
-			with (oServer) {
-				instance_destroy(self);
-			}
-			
+			self.data.server.dispose();
 			self.data.client.dispose();
 			
 			self.log.error("Failed to host a server!");
@@ -103,7 +100,8 @@ self.fsm.state("T.startServer", {
 			
 		});
 		
-		self.data.client.connect("localhost", port);
+		self.data.server.listen();
+		self.data.client.connect();
 		
 		return "connectingScreen";
 		
@@ -177,7 +175,7 @@ self.fsm.state("T.clientConnect", {
 		var ip = self.data.joinServerModal.ip;
 		var port = realOrUndefined(self.data.joinServerModal.port) ?? DEFAULT_PORT;
 		
-		self.data.client = new Client();
+		self.data.client = new Client(new NetworkClient(network_socket_tcp, ip, port));
 		
 		self.data.client.events.once("connect", function() {
 			self.fsm.change("clientLobbyScreen");
@@ -188,7 +186,7 @@ self.fsm.state("T.clientConnect", {
 			self.fsm.change("T.clientDisconnect");
 		});
 		
-		self.data.client.connect(ip, port);
+		self.data.client.connect();
 		
 		return "connectingScreen";
 		

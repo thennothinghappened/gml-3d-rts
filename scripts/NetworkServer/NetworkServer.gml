@@ -1,13 +1,29 @@
 
+#macro DEFAULT_PORT 27015
+
 /**
  * @param {Constant.SocketType} protocol
+ * @param {Real} port
+ * @param {Real} maxClients
  */
-function NetworkServer(protocol) constructor {
+function NetworkServer(protocol, port, maxClients) constructor {
+	
+	CLASS_LOG;
 	
 	/**
 	 * @type {Constant.SocketType}
 	 */
 	self.protocol = protocol;
+	
+	/**
+	 * The port that this server listens on.
+	 */
+	self.port = port;
+	
+	/**
+	 * The maximum number of clients that may connect to this server.
+	 */
+	self.maxClients = maxClients;
 	
 	/**
 	 * The network socket associated with this server.
@@ -34,25 +50,79 @@ function NetworkServer(protocol) constructor {
 	self.events = new EventEmitter("connect", "data", "disconnect");
 	
 	/**
-	 * Bind this server to the given port.
+	 * Begins listening on the network for clients.
 	 * Returns whether the operation was successful.
 	 * 
-	 * @param {Real} port
- 	 * @param {Real} maxClients
 	 * @returns {Bool}
 	 */
-	static bind = function(port, maxClients) {
+	static listen = function() {
 		
 		Assert.eq(self.socket, undefined);
 		
-		self.socket = network_create_server(self.protocol, port, maxClients);
+		self.socket = network_create_server(self.protocol, self.port, self.maxClients);
 		
 		if (self.socket < 0) {
+			self.socket = undefined;
 			return false;
 		}
 		
 		NETMANAGER.register(self.socket, method(self, self.handleNetMessage));
+		log.info($"Up on port {self.port}");
+		
 		return true;
+		
+	};
+	
+	/**
+	 * Set a different port to bind to, instead of the one that was initially specified.
+	 * 
+	 * This method may only be called if the server is not currently listening.
+	 * 
+	 * @param {Real} port
+	 */
+	static setPort = function(port) {
+		
+		Assert.eq(self.socket, undefined);
+		self.port = port;
+		
+	};
+	
+	/**
+	 * Send a buffer to the given client.
+	 * 
+	 * @param {Id.Socket} client
+	 * @param {Id.Buffer} buffer
+	 */
+	static sendBuffer = function(client, buffer) {
+		Assert.neq(self.socket, undefined);
+		network_send_packet(client, buffer, buffer_get_size(buffer));
+	};
+	
+	/**
+	 * Send textual data to the given client.
+	 * 
+	 * @param {Id.Socket} client
+	 * @param {String} text
+	 */
+	static sendText = function(client, text) {
+		
+		var buffer = buffer_create(string_byte_length(text), buffer_fixed, 1);
+		buffer_write(buffer, buffer_text, text);
+		
+		self.sendBuffer(client, buffer);
+		buffer_delete(buffer);
+		
+	};
+	
+	/**
+	 * Dispose of this server. This MUST be called to correctly clean up the resources used.
+	 */
+	static dispose = function() {
+		
+		if (!is_undefined(self.socket)) {
+			network_destroy(self.socket);
+			NETMANAGER.deregister(self.socket);
+		}
 		
 	};
 	
@@ -95,45 +165,6 @@ function NetworkServer(protocol) constructor {
 			
 			break;
 			
-		}
-		
-	};
-	
-	/**
-	 * Send a buffer to the given client.
-	 * 
-	 * @param {Id.Socket} client
-	 * @param {Id.Buffer} buffer
-	 */
-	static sendBuffer = function(client, buffer) {
-		Assert.neq(self.socket, undefined);
-		network_send_packet(client, buffer, buffer_get_size(buffer));
-	};
-	
-	/**
-	 * Send textual data to the given client.
-	 * 
-	 * @param {Id.Socket} client
-	 * @param {String} text
-	 */
-	static sendText = function(client, text) {
-		
-		var buffer = buffer_create(string_byte_length(text), buffer_fixed, 1);
-		buffer_write(buffer, buffer_text, text);
-		
-		self.sendBuffer(client, buffer);
-		buffer_delete(buffer);
-		
-	};
-	
-	/**
-	 * Dispose of this server. This MUST be called to correctly clean up the resources used.
-	 */
-	static dispose = function() {
-		
-		if (!is_undefined(self.socket)) {
-			network_destroy(self.socket);
-			NETMANAGER.deregister(self.socket);
 		}
 		
 	};
