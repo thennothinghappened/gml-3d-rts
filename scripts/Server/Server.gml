@@ -93,17 +93,18 @@ function Server(networkServer) constructor {
 		}
 		
 		var procedureHandler = procedureHandlers[$ request.procedure.name];
-		procedureHandler(client, request);
+		procedureHandler(client, request, request.params);
 		
 	};
 	
 	/**
 	 * @param {Id.Socket} client
 	 * @param {Struct.JsonRpcIncomingRequest} request
+	 * @param {Struct.ClientJoinInfo} params
 	 */
-	static onJoin = function(client, request) {
+	static onJoin = function(client, request, params) {
 		
-		var desiredUsername = request.params.desiredUsername;
+		var desiredUsername = params.desiredUsername;
 		log.info($"Client `{client}` joining with username {desiredUsername}");
 		
 		self.networkServer.sendText(client, json_stringify(self.jsonRpc.createResponse(request,

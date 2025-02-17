@@ -104,7 +104,7 @@ function Client(networkClient) constructor {
 		}
 		
 		var procedureHandler = procedureHandlers[$ request.procedure.name];
-		procedureHandler(request);
+		procedureHandler(request, request.params);
 		
 	};
 	
