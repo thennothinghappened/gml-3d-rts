@@ -2,8 +2,8 @@
 /**
  * Information sent from the server to a newly connecting client.
  * 
- * @param {Real} yourId Unique identifier assigned by the server for this client.
- * @param {Array<Real>} clientList List of client IDs in the server.
+ * @param {Id.Socket} yourId Unique identifier assigned by the server for this client.
+ * @param {Array<Id.Socket>} clientList List of client IDs in the server.
  */
 function ServerJoinInfo(
 	yourId,

@@ -8,33 +8,15 @@ function Server(networkServer) constructor {
 	
 	CLASS_LOG;
 	
-	/**
-	 * List of types of messages that can be recieved from clients.
-	 * @type {Array<Class<Struct.Message>>}
-	 */
-	static incomingMessageTypes = [
-		ClientJoinInfo
-	];
+	static procedureHandlers = {};
 	
-	/**
-	 * Mapping of message type names to their corresponding class.
-	 * @type {Record<String, Class<Struct.Message>>}
-	 */
-	static incomingMessageTypesMap = {};
-	
-	// Initialise the message types map.
-	if (struct_names_count(incomingMessageTypesMap) == 0) {
-		array_foreach(incomingMessageTypes, function(messageType) {
-			incomingMessageTypesMap[$ script_get_name(messageType)] = messageType;
-		});
-	}
-	
+	self.jsonRpc = new JsonRpc(serverProcedures(), clientProcedures());
 	self.clients = [];
 	
 	self.networkServer = networkServer;
-	self.networkServer.events.on("connect", method(self, self.onConnect));
-	self.networkServer.events.on("disconnect", method(self, self.onDisconnect));
-	self.networkServer.events.on("data", method(self, self.onData));
+	self.networkServer.events.on("connect", method(self, self.onNetConnect));
+	self.networkServer.events.on("disconnect", method(self, self.onNetDisconnect));
+	self.networkServer.events.on("data", method(self, self.onNetData));
 	
 	/**
 	 * Begins listening on the network for clients.
@@ -60,19 +42,9 @@ function Server(networkServer) constructor {
 	 * @ignore
 	 * @param {Id.Socket} client
 	 */
-	static onConnect = function(client) {
-		
+	static onNetConnect = function(client) {
 		log.info($"New connection from `{client}`");
 		array_push(self.clients, client);
-	
-		var text = json_stringify({
-			type: "connectInfo",
-			yourId: client,
-			clientIdList: self.clients
-		});
-		
-		self.networkServer.sendText(client, text);
-		
 	};
 	
 	/**
@@ -81,7 +53,7 @@ function Server(networkServer) constructor {
 	 * @ignore
 	 * @param {Id.Socket} client
 	 */
-	static onDisconnect = function(client) {
+	static onNetDisconnect = function(client) {
 		log.debug($"`{client}` is disconnecting");
 		array_delete(self.clients, array_get_index(self.clients, client), 1);
 	};
@@ -93,35 +65,74 @@ function Server(networkServer) constructor {
 	 * @param {Id.Socket} client
 	 * @param {Id.Buffer} buffer
 	 */
-	static onData = function(client, buffer) {
+	static onNetData = function(client, buffer) {
 		
 		var text = buffer_read(buffer, buffer_text);
 		var json;
 		
+		log.debug($"Packet from client `{client}`: `{text}`");
+		
 		try {
 			json = json_parse(text);
 		} catch (_) {
-			throw new Err("TODO: Failed to parse inbound message from client!");
+			log.error(new Err("TODO: Failed to parse inbound message from client!"));
+			return;
 		}
 		
-		log.debug($"Packet from client `{client}`: {json}");
-	
-		if (!is_struct(json)) {
-			throw new Err("TODO: client sent a non-struct packet!");
+		var request;
+		
+		try {
+			request = self.jsonRpc.handleIncoming(json);
+		} catch (err) {
+			log.error(new Err("Error whilst handling incoming request", err));
+			return;
 		}
-	
-		var type = json[$ "type"];
-	
-		if (!is_string(type)) {
-			throw new Err("TODO: client sent a non-string packet type!");
+		
+		if (!is_instanceof(request, JsonRpcIncomingRequest)) {
+			return;
 		}
-	
-		switch (type) {
-			default:
-				log.warn($"Unknown message `{type}` from client `{client}`");
-			break;
-		}
+		
+		var procedureHandler = procedureHandlers[$ request.procedure.name];
+		procedureHandler(client, request);
 		
 	};
+	
+	/**
+	 * @param {Id.Socket} client
+	 * @param {Struct.JsonRpcIncomingRequest} request
+	 */
+	static onJoin = function(client, request) {
+		
+		var desiredUsername = request.params.desiredUsername;
+		log.info($"Client `{client}` joining with username {desiredUsername}");
+		
+		self.networkServer.sendText(client, json_stringify(self.jsonRpc.createResponse(request,
+			new ServerJoinInfo(
+				client,
+				self.clients
+			)
+		)));
+		
+	};
+	
+	if (struct_names_count(procedureHandlers) == 0) {
+		procedureHandlers[$ serverProcedures.join.name] = self.onJoin;
+	}
+	
+}
+
+/**
+ * Obtain the list of procedures on a game server.
+ * @pure
+ */
+function serverProcedures() {
+	
+	static join = new JsonRpcProcedure("join", ClientJoinInfo, ServerJoinInfo);
+	
+	static list = [
+		join
+	];
+	
+	return list;
 	
 }

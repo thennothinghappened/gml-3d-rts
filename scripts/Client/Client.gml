@@ -8,34 +8,16 @@ function Client(networkClient) constructor {
 	
 	CLASS_LOG;
 	
-	/**
-	 * List of types of messages that can be recieved from the server.
-	 * @type {Array<Class<Struct.Message>>}
-	 */
-	static incomingMessageTypes = [
-		ServerJoinInfo
-	];
+	static procedureHandlers = {};
 	
-	/**
-	 * Mapping of message type names to their corresponding class.
-	 * @type {Record<String, Class<Struct.Message>>}
-	 */
-	static incomingMessageTypesMap = {};
-	
-	// Initialise the message types map.
-	if (struct_names_count(incomingMessageTypesMap) == 0) {
-		array_foreach(incomingMessageTypes, function(messageType) {
-			incomingMessageTypesMap[$ script_get_name(messageType)] = messageType;
-		});
-	}
-	
+	self.jsonRpc = new JsonRpc(clientProcedures(), serverProcedures());
 	self.events = new EventEmitter("connect", "connectFailed", "disconnect");
 	
 	self.networkClient = networkClient;
-	self.networkClient.events.on("connect", method(self, self.onConnect));
-	self.networkClient.events.on("connectFailed", method(self, self.onConnectFailed));
-	self.networkClient.events.on("disconnect", method(self, self.onDisconnect));
-	self.networkClient.events.on("data", method(self, self.onData));
+	self.networkClient.events.on("connect", method(self, self.onNetConnect));
+	self.networkClient.events.on("connectFailed", method(self, self.onNetConnectFailed));
+	self.networkClient.events.on("disconnect", method(self, self.onNetDisconnect));
+	self.networkClient.events.on("data", method(self, self.onNetData));
 	
 	/**
 	 * Attempt to create a connection with the network client.
@@ -56,10 +38,19 @@ function Client(networkClient) constructor {
 	 * Called upon successful connection to the server.
 	 * @ignore
 	 */
-	static onConnect = function() {
+	static onNetConnect = function() {
 		
-		var message = new ClientJoinInfo(oGame.prefs.username);
-		self.networkClient.sendText(json_stringify(message.toJson()));
+		var message = self.jsonRpc.createRequest("join", new ClientJoinInfo(oGame.prefs.username), function(result, error) {
+			
+			if (!is_undefined(error)) {
+				return self.events.emit("connectFailed", error);
+			}
+			
+			return self.events.emit("connect", result);
+			
+		});
+		
+		self.networkClient.sendText(json_stringify(message));
 		
 	};
 	
@@ -67,7 +58,7 @@ function Client(networkClient) constructor {
 	 * Called upon failure to connect to the server.
 	 * @ignore
 	 */
-	static onConnectFailed = function() {
+	static onNetConnectFailed = function() {
 		log.error("Failed to connect to the server.");
 		self.events.emit("connectFailed");
 	};
@@ -76,7 +67,7 @@ function Client(networkClient) constructor {
 	 * Called upon disconnection from the server.
 	 * @ignore
 	 */
-	static onDisconnect = function() {
+	static onNetDisconnect = function() {
 		log.error("Disconnected from the server.");
 		self.events.emit("disconnect");
 	};
@@ -85,7 +76,7 @@ function Client(networkClient) constructor {
 	 * Called upon receiving a data packet from the server.
 	 * @ignore
 	 */
-	static onData = function(buffer) {
+	static onNetData = function(buffer) {
 		
 		var text = buffer_read(buffer, buffer_text);
 		var json;
@@ -94,27 +85,45 @@ function Client(networkClient) constructor {
 		
 		try {
 			json = json_parse(text);
-		} catch (_) {
-			log.error(new Err("TODO: Failed to parse inbound message from the server!"));
+		} catch (err) {
+			log.error(new Err("TODO: Failed to parse inbound message from the server!", err));
 			return;
 		}
 		
-		if (!is_struct(json)) {
-			throw new Err("TODO: server sent a non-struct packet!");
-		}
-	
-		var type = json[$ "type"];
-	
-		if (!is_string(type)) {
-			throw new Err("TODO: server sent a non-string packet type!");
-		}
-	
-		switch (type) {
-			default:
-				log.warn($"Unhandled packet type `{type}`!");
-			break;
+		var request;
+		
+		try {
+			request = self.jsonRpc.handleIncoming(json);
+		} catch (err) {
+			log.error(new Err("Error whilst handling incoming request", err));
+			return;
 		}
 		
+		if (!is_instanceof(request, JsonRpcIncomingRequest)) {
+			return;
+		}
+		
+		var procedureHandler = procedureHandlers[$ request.procedure.name];
+		procedureHandler(request);
+		
 	};
+	
+	if (struct_names_count(procedureHandlers) == 0) {
+		//procedureHandlers[$ serverProcedures.join.name] = self.onJoin;
+	}
+	
+}
+
+/**
+ * Obtain the list of procedures on a game client.
+ * @pure
+ */
+function clientProcedures() {
+	
+	static list = [
+		
+	];
+	
+	return list;
 	
 }
