@@ -107,12 +107,12 @@ function Server(networkServer) constructor {
 		var desiredUsername = params.desiredUsername;
 		log.info($"Client `{client}` joining with username {desiredUsername}");
 		
-		self.networkServer.sendText(client, json_stringify(self.jsonRpc.createResponse(request,
+		self.networkServer.sendJson(client, self.jsonRpc.createResponse(request,
 			new ServerJoinInfo(
 				client,
 				self.clients
 			)
-		)));
+		));
 		
 	};
 	

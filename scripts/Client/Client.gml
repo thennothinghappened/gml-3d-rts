@@ -50,7 +50,7 @@ function Client(networkClient) constructor {
 			
 		});
 		
-		self.networkClient.sendText(json_stringify(message));
+		self.networkClient.sendJson(message);
 		
 	};
 	

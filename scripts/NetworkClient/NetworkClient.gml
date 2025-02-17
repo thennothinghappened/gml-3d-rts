@@ -108,6 +108,15 @@ function NetworkClient(protocol, ip, port) constructor {
 	};
 	
 	/**
+	 * Send something that may be serialised as JSON to the remote server.
+	 * 
+	 * @param {Any} json
+	 */
+	static sendJson = function(json) {
+		return self.sendText(json_stringify(json));
+	}
+	
+	/**
 	 * Dispose of this network client. This MUST be called to correctly clean up the resources used.
 	 */
 	static dispose = function() {

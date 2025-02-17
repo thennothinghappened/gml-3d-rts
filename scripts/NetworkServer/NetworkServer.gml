@@ -115,6 +115,16 @@ function NetworkServer(protocol, port, maxClients) constructor {
 	};
 	
 	/**
+	 * Send something that may be serialised as JSON to the given client.
+	 * 
+	 * @param {Id.Socket} client
+	 * @param {Any} json
+	 */
+	static sendJson = function(client, json) {
+		return self.sendText(client, json_stringify(json));
+	}
+	
+	/**
 	 * Dispose of this server. This MUST be called to correctly clean up the resources used.
 	 */
 	static dispose = function() {
