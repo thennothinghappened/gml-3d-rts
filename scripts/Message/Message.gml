@@ -5,8 +5,8 @@
 function Message() constructor {
 	
 	/**
-	 * Convert this message to a serialisable string of JSON.
-	 * @returns {String}
+	 * Convert this message to serialisable JSON that may be safely stringified.
+	 * @returns {Any}
 	 */
 	static toJson = function() {
 		throw NotImplemented();
@@ -20,7 +20,7 @@ function Message() constructor {
 	 * Throws if the message is malformed.
 	 * 
 	 * @param {Any} json The serialised JSON data to parse.
-	 * @returns {Struct}
+	 * @returns {Struct.Message}
 	 */
 	static fromJson = function(json) {
 		throw NotImplemented();

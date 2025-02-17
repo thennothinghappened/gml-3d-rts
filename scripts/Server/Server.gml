@@ -10,7 +10,7 @@ function Server(networkServer) constructor {
 	
 	/**
 	 * List of types of messages that can be recieved from clients.
-	 * @type {Array<typeof Struct.Message>}
+	 * @type {Array<Class<Struct.Message>>}
 	 */
 	static incomingMessageTypes = [
 		ClientJoinInfo
@@ -18,7 +18,7 @@ function Server(networkServer) constructor {
 	
 	/**
 	 * Mapping of message type names to their corresponding class.
-	 * @type {Record<String, typeof Struct.Message>}
+	 * @type {Record<String, Class<Struct.Message>>}
 	 */
 	static incomingMessageTypesMap = {};
 	

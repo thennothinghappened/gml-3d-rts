@@ -10,7 +10,7 @@ function Client(networkClient) constructor {
 	
 	/**
 	 * List of types of messages that can be recieved from the server.
-	 * @type {Array<typeof Struct.Message>}
+	 * @type {Array<Class<Struct.Message>>}
 	 */
 	static incomingMessageTypes = [
 		ServerJoinInfo
@@ -18,7 +18,7 @@ function Client(networkClient) constructor {
 	
 	/**
 	 * Mapping of message type names to their corresponding class.
-	 * @type {Record<String, typeof Struct.Message>}
+	 * @type {Record<String, Class<Struct.Message>>}
 	 */
 	static incomingMessageTypesMap = {};
 	
@@ -59,7 +59,7 @@ function Client(networkClient) constructor {
 	static onConnect = function() {
 		
 		var message = new ClientJoinInfo(oGame.prefs.username);
-		self.networkClient.sendText(message.toJson());
+		self.networkClient.sendText(json_stringify(message.toJson()));
 		
 	};
 	

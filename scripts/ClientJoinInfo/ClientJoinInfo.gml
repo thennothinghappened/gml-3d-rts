@@ -11,11 +11,11 @@ function ClientJoinInfo(
 	self.desiredUsername = desiredUsername;
 	
 	/**
-	 * Convert this message to a serialisable string of JSON.
-	 * @returns {String}
+	 * Convert this message to serialisable JSON that may be safely stringified.
+	 * @returns {Any}
 	 */
 	static toJson = function() {
-		return json_stringify(self);
+		return { desiredUsername };
 	};
 	
 	/**
