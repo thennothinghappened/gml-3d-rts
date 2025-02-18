@@ -204,8 +204,8 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
  * A procedure that may be called remotely via JSON-RPC.
  * 
  * @param {String} name Unique name for this procedure.
- * @param {Class<Struct.Message>|Undefined} requestClass The class of the message type used for requests to this procedure. If `undefined`, no parameters are given.
- * @param {Class<Struct.Message>|Undefined} responseClass The class of the message type used for responses from this procedure. If `undefined`, this is a notification.
+ * @param {Function.Message|Undefined} requestClass The class of the message type used for requests to this procedure. If `undefined`, no parameters are given.
+ * @param {Function.Message|Undefined} responseClass The class of the message type used for responses from this procedure. If `undefined`, this is a notification.
  */
 function JsonRpcProcedure(name, requestClass, responseClass) constructor {
 	self.name = name;
