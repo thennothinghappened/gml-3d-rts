@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"ClientJoinInfo",
+  "%Name":"ServerJoin",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"ClientJoinInfo",
+  "name":"ServerJoin",
   "parent":{
-    "name":"Messages",
-    "path":"folders/Scripts/Network/Messaging/Messages.yy",
+    "name":"Procedures",
+    "path":"folders/Scripts/Network/Server/Procedures.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Message",
+  "%Name":"ClientProcedures",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Message",
+  "name":"ClientProcedures",
   "parent":{
-    "name":"Network",
-    "path":"folders/Scripts/Network.yy",
+    "name":"Client",
+    "path":"folders/Scripts/Network/Client.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

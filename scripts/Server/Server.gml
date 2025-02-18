@@ -123,14 +123,14 @@ function Server(networkServer) constructor {
 	/**
 	 * @param {Id.Socket} client
 	 * @param {Struct.JsonRpcIncomingRequest} request
-	 * @param {Struct.ClientJoinInfo} params
+	 * @param {Struct.ServerJoinRequest} params
 	 */
 	static onJoin = function(client, request, params) {
 		
 		var desiredUsername = params.desiredUsername;
 		log.info($"Client `{client}` joining with username {desiredUsername}");
 		
-		self.respond(client, request, new ServerJoinInfo(
+		self.respond(client, request, new ServerJoinResponse(
 			client,
 			self.clients
 		));
@@ -153,33 +153,3 @@ function Server(networkServer) constructor {
 	}
 	
 }
-
-/**
- * Shorthand macro for accessing the list of server procedures.
- * 
- * This basically just exists because the GameMaker IDE's Code Editor 2 refuses to autocomplete constructor names
- * if the previously typed keyword was not `new`.
- */
-#macro ServerProc ServerProcedures
-
-/**
- * The list of procedures on a game server.
- */
-function ServerProcedures() constructor {
-	
-	/**
-	 * Clients call this to inform the server of their configuration. In response,
-	 * the server informs them of the client list, and their unique ID in the server.
-	 */
-	static join = new JsonRpcProcedure("join", ClientJoinInfo, ServerJoinInfo);
-	
-	/**
-	 * The full list of procedures, to register against.
-	 */
-	static procedureList = [
-		join
-	];
-	
-}
-
-new ServerProcedures();
