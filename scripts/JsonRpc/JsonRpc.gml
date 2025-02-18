@@ -62,15 +62,12 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	 * 
 	 * Throws if the parameters passed are not the correct request message type for the procedure.
 	 * 
-	 * @param {String} procedureName The name of the procedure to call.
+	 * @param {Struct.JsonRpcProcedure} procedure The procedure to call.
 	 * @param {Struct.Message} params The parameters for the procedure.
 	 * @param {Function|Undefined} callback `(result: T|Undefined, error: E|Undefined) -> Undefined` \| A function to be executed upon receiving a response to this request, unless this is a notification.
 	 */
-	static createRequest = function(procedureName, params, callback) {
+	static createRequest = function(procedure, params, callback) {
 		
-		var procedure = self.remoteProcedureMap[$ procedureName];
-		
-		Assert.cond(!is_undefined(procedure));
 		Assert.cond(is_instanceof(params, procedure.requestClass));
 		
 		var messageId = undefined;

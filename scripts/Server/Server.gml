@@ -8,9 +8,7 @@ function Server(networkServer) constructor {
 	
 	CLASS_LOG;
 	
-	static procedureHandlers = {};
-	
-	self.jsonRpc = new JsonRpc(serverProcedures(), clientProcedures());
+	self.jsonRpc = new JsonRpc(ServerProcedures.procedureList, ClientProcedures.procedureList);
 	self.clients = [];
 	
 	self.networkServer = networkServer;
@@ -34,6 +32,31 @@ function Server(networkServer) constructor {
 	 */
 	static dispose = function() {
 		self.networkServer.dispose();
+	};
+	
+	/**
+	 * Call a remote procedure on a given client.
+	 * 
+	 * @private
+	 * @param {Id.Socket} client The client to call the procedure on.
+	 * @param {Struct.JsonRpcProcedure} procedure The procedure to call
+	 * @param {Struct.Message} params The parameters for the procedure.
+	 * @param {Function} callback `(result: T|Undefined, error: E|Undefined) -> Undefined` \| A function to be executed upon receiving a response to this request, unless this is a notification.
+	 */
+	static call = function(client, procedure, params, callback) {
+		self.networkServer.sendJson(client, self.jsonRpc.createRequest(procedure, params, callback));
+	};
+	
+	/**
+	 * Respond to a remote procedure call from the given client, with the specified response data.
+	 * 
+	 * @private
+	 * @param {Id.Socket} client The client to reply to.
+	 * @param {Struct.JsonRpcIncomingRequest} request The request for which we are responding to.
+	 * @param {Struct.Message} response The response data to send.
+	 */
+	static respond = function(client, request, response) {
+		self.networkServer.sendJson(client, self.jsonRpc.createResponse(request, response));
 	};
 	
 	/**
@@ -107,33 +130,56 @@ function Server(networkServer) constructor {
 		var desiredUsername = params.desiredUsername;
 		log.info($"Client `{client}` joining with username {desiredUsername}");
 		
-		self.networkServer.sendJson(client, self.jsonRpc.createResponse(request,
-			new ServerJoinInfo(
-				client,
-				self.clients
-			)
+		self.respond(client, request, new ServerJoinInfo(
+			client,
+			self.clients
 		));
 		
 	};
 	
+	/**
+	 * List of registered handlers for procedures on the server.
+	 * @ignore
+	 */
+	static procedureHandlers = {};
+	
 	if (struct_names_count(procedureHandlers) == 0) {
-		procedureHandlers[$ serverProcedures.join.name] = self.onJoin;
+		
+		procedureHandlers[$ ServerProc.join.name] = self.onJoin;
+		
+		// Ensure all procedures have been registered.
+		Assert.eq(struct_names_count(procedureHandlers), array_length(ServerProc.procedureList));
+		
 	}
 	
 }
 
 /**
- * Obtain the list of procedures on a game server.
- * @pure
+ * Shorthand macro for accessing the list of server procedures.
+ * 
+ * This basically just exists because the GameMaker IDE's Code Editor 2 refuses to autocomplete constructor names
+ * if the previously typed keyword was not `new`.
  */
-function serverProcedures() {
+#macro ServerProc ServerProcedures
+
+/**
+ * The list of procedures on a game server.
+ */
+function ServerProcedures() constructor {
 	
+	/**
+	 * Clients call this to inform the server of their configuration. In response,
+	 * the server informs them of the client list, and their unique ID in the server.
+	 */
 	static join = new JsonRpcProcedure("join", ClientJoinInfo, ServerJoinInfo);
 	
-	static list = [
+	/**
+	 * The full list of procedures, to register against.
+	 */
+	static procedureList = [
 		join
 	];
 	
-	return list;
-	
 }
+
+new ServerProcedures();

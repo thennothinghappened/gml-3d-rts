@@ -8,9 +8,7 @@ function Client(networkClient) constructor {
 	
 	CLASS_LOG;
 	
-	static procedureHandlers = {};
-	
-	self.jsonRpc = new JsonRpc(clientProcedures(), serverProcedures());
+	self.jsonRpc = new JsonRpc(ClientProc.procedureList, ServerProc.procedureList);
 	self.events = new EventEmitter("connect", "connectFailed", "disconnect");
 	
 	self.networkClient = networkClient;
@@ -35,12 +33,34 @@ function Client(networkClient) constructor {
 	};
 	
 	/**
+	 * Call a remote procedure on the server.
+	 * 
+	 * @private
+	 * @param {Struct.JsonRpcProcedure} procedure The procedure to call
+	 * @param {Struct.Message} params The parameters for the procedure.
+	 * @param {Function} callback `(result: T|Undefined, error: E|Undefined) -> Undefined` \| A function to be executed upon receiving a response to this request, unless this is a notification.
+	 */
+	static call = function(procedure, params, callback) {
+		self.networkClient.sendJson(self.jsonRpc.createRequest(procedure, params, callback));
+	};
+	
+	/**
+	 * Respond to a remote procedure call from the server, with the specified response data.
+	 * 
+	 * @private
+	 * @param {Struct.JsonRpcIncomingRequest} request The request for which we are responding to.
+	 * @param {Struct.Message} response The response data to send.
+	 */
+	static respond = function(request, response) {
+		self.networkClient.sendJson(self.jsonRpc.createResponse(request, response));
+	};
+	
+	/**
 	 * Called upon successful connection to the server.
 	 * @ignore
 	 */
 	static onNetConnect = function() {
-		
-		var message = self.jsonRpc.createRequest("join", new ClientJoinInfo(oGame.prefs.username), function(result, error) {
+		self.call(ServerProc.join, new ClientJoinInfo(oGame.prefs.username), function(result, error) {
 			
 			if (!is_undefined(error)) {
 				return self.events.emit("connectFailed", error);
@@ -49,9 +69,6 @@ function Client(networkClient) constructor {
 			return self.events.emit("connect", result);
 			
 		});
-		
-		self.networkClient.sendJson(message);
-		
 	};
 	
 	/**
@@ -108,22 +125,41 @@ function Client(networkClient) constructor {
 		
 	};
 	
+	/**
+	 * List of registered handlers for procedures on the client.
+	 * @ignore
+	 */
+	static procedureHandlers = {};
+	
 	if (struct_names_count(procedureHandlers) == 0) {
-		//procedureHandlers[$ serverProcedures.join.name] = self.onJoin;
+		
+		// Ensure all procedures have been registered.
+		Assert.eq(struct_names_count(procedureHandlers), array_length(ClientProc.procedureList));
+		
 	}
 	
 }
 
 /**
- * Obtain the list of procedures on a game client.
- * @pure
+ * Shorthand macro for accessing the list of client procedures.
+ * 
+ * This basically just exists because the GameMaker IDE's Code Editor 2 refuses to autocomplete constructor names
+ * if the previously typed keyword was not `new`.
  */
-function clientProcedures() {
+#macro ClientProc ClientProcedures
+
+/**
+ * The list of procedures on a game client.
+ */
+function ClientProcedures() constructor {
 	
-	static list = [
+	/**
+	 * The full list of procedures, to register against.
+	 */
+	static procedureList = [
 		
 	];
 	
-	return list;
-	
 }
+
+new ClientProcedures();
