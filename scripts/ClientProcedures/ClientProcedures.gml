@@ -13,10 +13,18 @@
 function ClientProcedures() constructor {
 	
 	/**
+	 * The server will periodically send clients a heartbeat message at an agreed upon interval.
+	 * 
+	 * @see {HEARTBEAT_MESSAGE_INTERVAL_MILLISECONDS}
+	 * @see {HEARTBEAT_MESSAGE_MAX_MISS_COUNT}
+	 */
+	static heartbeat = new JsonRpcProcedure("join", ClientHeartbeatRequest, ClientHeartbeatResponse);
+	
+	/**
 	 * The full list of procedures, to register against.
 	 */
 	static procedureList = [
-		
+		heartbeat
 	];
 	
 }

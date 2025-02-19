@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"ClientHeartbeat",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"ClientHeartbeat",
+  "parent":{
+    "name":"Procedures",
+    "path":"folders/Scripts/Network/Client/Procedures.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

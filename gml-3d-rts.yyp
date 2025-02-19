@@ -55,6 +55,7 @@
     {"id":{"name":"rmMain","path":"rooms/rmMain/rmMain.yy",},},
     {"id":{"name":"Assert","path":"scripts/Assert/Assert.yy",},},
     {"id":{"name":"Client","path":"scripts/Client/Client.yy",},},
+    {"id":{"name":"ClientHeartbeat","path":"scripts/ClientHeartbeat/ClientHeartbeat.yy",},},
     {"id":{"name":"ClientProcedures","path":"scripts/ClientProcedures/ClientProcedures.yy",},},
     {"id":{"name":"Err","path":"scripts/Err/Err.yy",},},
     {"id":{"name":"EventEmitter","path":"scripts/EventEmitter/EventEmitter.yy",},},

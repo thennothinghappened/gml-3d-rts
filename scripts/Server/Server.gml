@@ -17,13 +17,29 @@ function Server(networkServer) constructor {
 	self.networkServer.events.on("data", method(self, self.onNetData));
 	
 	/**
+	 * Timer that runs indefinitely whilst the server is up, sending heartbeat pings to clients.
+	 */
+	self.heartbeatTimer = time_source_create(
+		time_source_game, (HEARTBEAT_MESSAGE_INTERVAL_MILLISECONDS / 1000), time_source_units_seconds,
+		method(self, self.sendHeartbeatPings), [],
+		-1
+	);
+	
+	/**
 	 * Begins listening on the network for clients.
 	 * Returns whether the operation was successful.
 	 * 
 	 * @returns {Bool}
 	 */
 	static listen = function() {
-		return self.networkServer.listen();
+		
+		if (!self.networkServer.listen()) {
+			return false;
+		}
+		
+		time_source_start(self.heartbeatTimer);
+		return true;
+		
 	}
 	
 	/**
@@ -31,6 +47,7 @@ function Server(networkServer) constructor {
 	 * This method **MUST** be called to clean up the resources used by this server.
 	 */
 	static dispose = function() {
+		time_source_destroy(self.heartbeatTimer);
 		self.networkServer.dispose();
 	};
 	
@@ -57,6 +74,22 @@ function Server(networkServer) constructor {
 	 */
 	static respond = function(client, request, response) {
 		self.networkServer.sendJson(client, self.jsonRpc.createResponse(request, response));
+	};
+	
+	/**
+	 * Send pings to connected players periodically.
+	 * If a client has not responded for too long, the server will consider them to have lost connection.
+	 * 
+	 * TODO: Currently, this means they are dropped. Once the RTS & Lockstep system develops, this behaviour will change.
+	 * 
+	 * @private
+	 */
+	static sendHeartbeatPings = function() {
+		array_foreach(self.clients, function(client) {
+			self.call(client, ClientProc.heartbeat, new ClientHeartbeatRequest(), function() {
+				log.debug("FIXME: no-op heartbeat reply");
+			});
+		});
 	};
 	
 	/**

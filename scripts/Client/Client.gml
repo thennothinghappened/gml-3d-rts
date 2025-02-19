@@ -56,6 +56,16 @@ function Client(networkClient) constructor {
 	};
 	
 	/**
+	 * Respond to server heartbeat pings.
+	 * 
+	 * @param {Struct.JsonRpcIncomingRequest} request
+	 * @param {Struct.ServerJoinRequest} params
+	 */
+	static onHeartbeat = function(request, params) {
+		self.respond(request, new ClientHeartbeatResponse());
+	};
+	
+	/**
 	 * Called upon successful connection to the server.
 	 * @ignore
 	 */
@@ -132,6 +142,8 @@ function Client(networkClient) constructor {
 	static procedureHandlers = {};
 	
 	if (struct_names_count(procedureHandlers) == 0) {
+		
+		procedureHandlers[$ ClientProc.heartbeat.name] = self.onHeartbeat;
 		
 		// Ensure all procedures have been registered.
 		Assert.eq(struct_names_count(procedureHandlers), array_length(ClientProc.procedureList));
