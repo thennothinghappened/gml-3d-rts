@@ -70,7 +70,11 @@ function Client(networkClient) constructor {
 	 * @ignore
 	 */
 	static onNetConnect = function() {
-		self.call(ServerProc.join, new ServerJoinRequest(oGame.prefs.username), function(result, error) {
+		
+		self.call(ServerProc.join, new ServerJoinRequest(
+			oGame.prefs.uuid,
+			oGame.prefs.username
+		), function(result, error) {
 			
 			if (!is_undefined(error)) {
 				return self.events.emit("connectFailed", error);
@@ -79,6 +83,7 @@ function Client(networkClient) constructor {
 			return self.events.emit("connect", result);
 			
 		});
+		
 	};
 	
 	/**

@@ -94,6 +94,7 @@
     {"id":{"name":"NetworkServer","path":"scripts/NetworkServer/NetworkServer.yy",},},
     {"id":{"name":"NotImplemented","path":"scripts/NotImplemented/NotImplemented.yy",},},
     {"id":{"name":"realOrUndefined","path":"scripts/realOrUndefined/realOrUndefined.yy",},},
+    {"id":{"name":"RemotePlayer","path":"scripts/RemotePlayer/RemotePlayer.yy",},},
     {"id":{"name":"Server","path":"scripts/Server/Server.yy",},},
     {"id":{"name":"ServerJoin","path":"scripts/ServerJoin/ServerJoin.yy",},},
     {"id":{"name":"ServerProcedures","path":"scripts/ServerProcedures/ServerProcedures.yy",},},

@@ -14,5 +14,9 @@ if (type == network_type_data) {
 var handler = self.socketMap[? socket];
 
 if (!is_undefined(handler)) {
-	handler(async_load);
+	try {
+		handler(async_load);
+	} catch (err) {
+		show_error(string(err), true);
+	}
 }

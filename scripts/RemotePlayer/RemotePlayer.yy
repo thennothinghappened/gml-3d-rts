@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"RemotePlayer",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"RemotePlayer",
+  "parent":{
+    "name":"Server",
+    "path":"folders/Scripts/Network/Server.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

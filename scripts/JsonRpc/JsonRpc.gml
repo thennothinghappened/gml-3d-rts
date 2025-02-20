@@ -7,6 +7,8 @@
  */
 function JsonRpc(localProcedures, remoteProcedures) constructor {
 	
+	CLASS_LOG;
+	
 	self.localProcedureMap = {};
 	self.remoteProcedureMap = {};
 	
@@ -35,17 +37,33 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	 * 
 	 * Throws if the message is malformed.
 	 * 
+	 * For a request, a `Struct.JsonRpcError` may be thrown if it is malformed. This error should be
+	 * caught specifically, and if the caught error is of this type, it should be passed back to the calling client.
+	 * 
 	 * @param {Any} json
 	 * @returns {Struct.JsonRpcIncomingRequest|Undefined}
 	 */
 	static handleIncoming = function(json) {
 		
 		Assert.cond(is_struct(json));
-		Assert.eq(json[$ "jsonrpc"], "2.0");
+		
+		var isRequest = !is_undefined(json[$ "method"]);
+		
+		try {
+			Assert.eq(json[$ "jsonrpc"], "2.0");
+		} catch (err) {
+			
+			if (!isRequest) {
+				throw err;
+			}
+			
+			throw new JsonRpcError(JsonRpcErrorCode.Parse, "Expected the `jsonrpc` key with value `\"2.0\"`.");
+			
+		}
 		
 		var messageId = json[$ "id"];
 		
-		if (!is_undefined(json[$ "method"])) {
+		if (isRequest) {
 			return self.handleRequest(messageId, json);
 		} else {
 			return self.handleResponse(messageId, json);
@@ -77,10 +95,16 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 			messageId = 0;
 			
 			while (messageId < array_length(self.outboundIds)) {
-				if (is_undefined(self.outboundIds[messageId ++])) {
+				
+				if (is_undefined(self.outboundIds[messageId])) {
 					break;
 				}
+				
+				messageId ++;
+				
 			}
+			
+			log.debug($"New message(id={messageId}, existing?={messageId < array_length(self.outboundIds) ? self.outboundIds[messageId] : undefined})");
 			
 			Assert.cond(messageId == array_length(self.outboundIds) || is_undefined(self.outboundIds[messageId]));
 			self.outboundIds[messageId] = new JsonRpcRequest(procedure, callback);
@@ -114,9 +138,52 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 		
 		return {
 			jsonrpc: "2.0",
+			id: request.messageId,
 			result: response.toJson(),
-			id: request.messageId
 		};
+		
+	};
+	
+	/**
+	 * Create a JSON-RPC error response to a procedure call from the remote.
+	 * 
+	 * ### Exceptions
+	 * 
+	 * - Throws if the response passed is not the correct response message type for the procedure.
+	 * - Throws if attempting to respond to a notification (no ID).
+	 * 
+	 * @param {Struct.JsonRpcIncomingRequest|Undefined} request The incoming request data object. This may be `undefined` if the request failed to parse.
+	 * @param {Struct.JsonRpcError} error The error to respond with.
+	 */
+	static createErrorResponse = function(request, error) {
+		return {
+			jsonrpc: "2.0",
+			id: !is_undefined(request) ? request.messageId : undefined,
+			error: error.toJson(),
+		};
+	};
+	
+	/**
+	 * Forget the given outbound request.
+	 * 
+	 * This is both used once it has been dispatched to the relevant handler, and in the case that this RPC handler
+	 * is either:
+	 * 
+	 * a) Shared, with multiple peers on the other side, and a peer has been lost.
+	 * b) Being reused from a previous connection to a peer, that may have had outgoing requests at time of disconnection.
+	 * 
+	 * ### Exceptions
+	 * 
+	 * Throws if the message ID is invalid.
+	 * 
+	 * @param {Real} messageId The identifier for the request to be forgotten.
+	 */
+	static forgetRequest = function(messageId) {
+		
+		Assert.cond(array_length(self.outboundIds) > messageId);
+		Assert.cond(!is_undefined(self.outboundIds[messageId]));
+		
+		self.outboundIds[messageId] = undefined;
 		
 	};
 	
@@ -126,7 +193,7 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	 * 
 	 * ### Exceptions
 	 * 
-	 * Throws if the message is malformed.
+	 * Throws a `Struct.JsonRpcError` if the message is malformed.
 	 * 
 	 * @ignore
 	 * @param {Real|Undefined} messageId
@@ -134,21 +201,36 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	 */
 	static handleRequest = function(messageId, json) {
 		
-		if (!is_undefined(messageId)) {
-			Assert.cond(is_real(messageId));
+		var procedureName;
+		
+		try {
+		
+			if (!is_undefined(messageId)) {
+				Assert.cond(is_real(messageId));
+			}
+			
+			procedureName = json[$ "method"];
+			Assert.cond(is_string(procedureName));
+			
+		} catch (err) {
+			throw new JsonRpcError(JsonRpcErrorCode.Parse, "Invalid type for ID field");
 		}
 		
-		var procedureName = json[$ "method"];
-		Assert.cond(is_string(procedureName));
-		
 		var localProcedure = self.localProcedureMap[$ procedureName];
-		Assert.cond(!is_undefined(localProcedure));
+		
+		if (is_undefined(localProcedure)) {
+			throw new JsonRpcError(JsonRpcErrorCode.MethodNotFound, $"No such method named `{procedureName}`");
+		}
 		
 		var paramsJson = json[$ "params"];
 		var params = undefined;
 		
 		if (!is_undefined(localProcedure.requestClass)) {
-			params = static_get(localProcedure.requestClass).fromJson(paramsJson);
+			try {
+				params = static_get(localProcedure.requestClass).fromJson(paramsJson);
+			} catch (err) {
+				throw new JsonRpcError(JsonRpcErrorCode.Parse, "Failed to parse `params` as JSON");
+			}
 		}
 		
 		return new JsonRpcIncomingRequest(messageId, localProcedure, params);
@@ -177,7 +259,7 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 		var request = self.outboundIds[messageId];
 		Assert.cond(!is_undefined(request));
 		
-		self.outboundIds[messageId] = undefined;
+		self.forgetRequest(messageId);
 		
 		var resultJson = json[$ "result"];
 		
