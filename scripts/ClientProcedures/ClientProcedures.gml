@@ -18,7 +18,7 @@ function ClientProcedures() constructor {
 	 * @see {HEARTBEAT_MESSAGE_INTERVAL_MILLISECONDS}
 	 * @see {HEARTBEAT_MESSAGE_MAX_MISS_COUNT}
 	 */
-	static heartbeat = new JsonRpcProcedure("join", ClientHeartbeatRequest, ClientHeartbeatResponse);
+	static heartbeat = new JsonRpcProcedure("heartbeat", ClientHeartbeatRequest, ClientHeartbeatResponse);
 	
 	/**
 	 * The full list of procedures, to register against.
