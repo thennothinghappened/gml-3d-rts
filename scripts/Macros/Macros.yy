@@ -1,9 +1,9 @@
 {
   "$GMScript":"v1",
-  "%Name":"FEATHERHINT",
+  "%Name":"Macros",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"FEATHERHINT",
+  "name":"Macros",
   "parent":{
     "name":"Utils",
     "path":"folders/Scripts/Utils.yy",
