@@ -67,24 +67,15 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	 * @param {Function|Undefined} callback `(result: T|Undefined, error: E|Undefined) -> Undefined` \| A function to be executed upon receiving a response to this request, unless this is a notification.
 	 */
 	static createRequest = function(procedure, params, callback) {
-		
-		Assert.cond(is_instanceof(params, procedure.requestClass));
+		Assert.cond(is_instanceof(params, procedure.requestClass), "Parameters for this request must match the request class kind");
 		
 		var messageId = undefined;
 		
-		if (!is_undefined(procedure.responseClass)) {
-			
-			messageId = 0;
-			
-			while (messageId < array_length(self.outboundIds)) {
-				if (is_undefined(self.outboundIds[messageId ++])) {
-					break;
-				}
-			}
-			
-			Assert.cond(messageId == array_length(self.outboundIds) || is_undefined(self.outboundIds[messageId]));
+		// If this message expects a response, give it a unique tracking ID.
+		if (procedure.responseClass != undefined)
+		{
+			messageId = self.nextMessageId();
 			self.outboundIds[messageId] = new JsonRpcRequest(procedure, callback);
-			
 		}
 		
 		return {
@@ -93,7 +84,6 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 			params: params.toJson(),
 			id: messageId
 		};
-		
 	};
 	
 	/**
@@ -198,6 +188,28 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 		
 	};
 	
+	/**
+	 * Retrieve a new unique message ID.
+	 * 
+	 * @private
+	 * @returns {Real}
+	 */
+	static nextMessageId = function()
+	{
+		var messageId = 0;
+		
+		// Look for a free message slot - `self.outboundIds` is sparse as callbacks are removed once actioned.
+		while (messageId < array_length(self.outboundIds)) {
+			if (is_undefined(self.outboundIds[messageId])) {
+				break;
+			}
+			
+			messageId += 1;
+		}
+		
+		Assert.cond(messageId == array_length(self.outboundIds) || is_undefined(self.outboundIds[messageId]), "Message ID must be unique");
+		return messageId;
+	}
 }
 
 /**
