@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"ServerJoinResponse",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"ServerJoinResponse",
+  "parent":{
+    "name":"ServerJoin",
+    "path":"folders/Scripts/Network/Server/Procedures/ServerJoin.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -29,29 +29,114 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	self.outboundIds = [];
 	
 	/**
-	 * Handle an incoming message, calling the appropriate procedure.
+	 * Handle an incoming request after determining an RPC packet to be a request to this server.
+	 * Returns a struct with the procedure that was called, and the parameters it was called with.
 	 * 
 	 * ### Exceptions
 	 * 
 	 * Throws if the message is malformed.
 	 * 
-	 * @param {Any} json
-	 * @returns {Struct.JsonRpcIncomingRequest|Undefined}
+	 * @param {Struct.JsonRpcIncomingRequest} json
 	 */
-	static handleIncoming = function(json) {
+	static handleIncomingRequest = function(json)
+	{
+		Assert.cond(isRequest(json));
 		
-		Assert.cond(is_struct(json));
-		Assert.eq(json[$ "jsonrpc"], "2.0");
+		var procedureName = json[$ "method"];
+		Assert.cond(is_string(procedureName));
 		
-		var messageId = json[$ "id"];
+		var localProcedure = self.localProcedureMap[$ procedureName];
+		Assert.cond(!is_undefined(localProcedure));
 		
-		if (!is_undefined(json[$ "method"])) {
-			return self.handleRequest(messageId, json);
-		} else {
-			return self.handleResponse(messageId, json);
+		var paramsJson = json[$ "params"];
+		var params = undefined;
+		
+		if (!is_undefined(localProcedure.requestClass)) {
+			params = static_get(localProcedure.requestClass).fromJson(paramsJson);
 		}
 		
-	};
+		return new JsonRpcIncomingRequest(json[$ "id"], localProcedure, params);
+	}
+	
+	/**
+	 * Handle a response from the remote.
+	 * 
+	 * ### Exceptions
+	 * 
+	 * - Throws if the message is malformed.
+	 * - Throws if the message is a response to a non-existent request ID.
+	 * - Throws if the message's `result` field, if specified, does not conform to the expected type specified.
+	 * 
+	 * @param {Struct} json
+	 * @returns {Undefined}
+	 */
+	static handleIncomingResponse = function(json)
+	{
+		Assert.cond(isResponse(json));
+		
+		var messageId = json.id;
+		Assert.cond(messageId < array_length(self.outboundIds), "Incoming response ID must be within the range of our response list");
+		
+		var request = self.outboundIds[messageId];
+		Assert.cond(!is_undefined(request), "Incoming response ID must have a registered callback");
+		
+		// Remove the callback.
+		self.outboundIds[messageId] = undefined;
+		
+		var resultJson = json[$ "result"];
+		
+		if (is_undefined(resultJson))
+		{
+			var errorJson = json[$ "error"];
+			Assert.cond(!is_undefined(errorJson));
+			
+			var error = JsonRpcError.fromJson(errorJson);
+			return request.callback(undefined, error);
+		}
+		
+		Assert.cond(!is_undefined(request.procedure.responseClass));
+		
+		var result = static_get(request.procedure.responseClass).fromJson(resultJson);
+		return request.callback(result, undefined);
+	}
+	
+	/**
+	 * Check whether the given JSON is a JSON-RPC message.
+	 * 
+	 * @param {Any} json
+	 * @returns {Bool}
+	 */
+	static isJsonRpc = function(json)
+	{
+		return is_struct(json)
+			&& (json[$ "jsonrpc"] == "2.0");
+	}
+	
+	/**
+	 * Check whether the given message is a JSON-RPC request.
+	 * 
+	 * @param {Any} json
+	 * @returns {Bool}
+	 */
+	static isRequest = function(json)
+	{
+		return isJsonRpc(json)
+			&& is_string(json[$ "method"])
+			&& (is_numeric(json[$ "id"]) || is_undefined(json[$ "id"]));
+	}
+	
+	/**
+	 * Check whether the given message is a JSON-RPC response.
+	 * 
+	 * @param {Any} json
+	 * @returns {Bool}
+	 */
+	static isResponse = function(json)
+	{
+		return isJsonRpc(json)
+			&& is_undefined(json[$ "method"])
+			&& is_numeric(json[$ "id"]);
+	}
 	
 	/**
 	 * Create a JSON-RPC request to the remote to perform the given procedure.
@@ -111,87 +196,9 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	};
 	
 	/**
-	 * Handle an incoming request after determining an RPC packet to be a request to this server.
-	 * Returns a struct with the procedure that was called, and the parameters it was called with.
-	 * 
-	 * ### Exceptions
-	 * 
-	 * Throws if the message is malformed.
-	 * 
-	 * @ignore
-	 * @param {Real|Undefined} messageId
-	 * @param {Struct.JsonRpcIncomingRequest} json
-	 */
-	static handleRequest = function(messageId, json) {
-		
-		if (!is_undefined(messageId)) {
-			Assert.cond(is_real(messageId));
-		}
-		
-		var procedureName = json[$ "method"];
-		Assert.cond(is_string(procedureName));
-		
-		var localProcedure = self.localProcedureMap[$ procedureName];
-		Assert.cond(!is_undefined(localProcedure));
-		
-		var paramsJson = json[$ "params"];
-		var params = undefined;
-		
-		if (!is_undefined(localProcedure.requestClass)) {
-			params = static_get(localProcedure.requestClass).fromJson(paramsJson);
-		}
-		
-		return new JsonRpcIncomingRequest(messageId, localProcedure, params);
-		
-	};
-	
-	/**
-	 * Handle a response from the remote.
-	 * 
-	 * ### Exceptions
-	 * 
-	 * - Throws if the message is malformed.
-	 * - Throws if the message is a response to a non-existent request ID.
-	 * - Throws if the message's `result` field, if specified, does not conform to the expected type specified.
-	 * 
-	 * @ignore
-	 * @param {Real} messageId
-	 * @param {Struct} json
-	 * @returns {Undefined}
-	 */
-	static handleResponse = function(messageId, json) {
-		
-		Assert.cond(is_real(messageId));
-		Assert.cond(messageId < array_length(self.outboundIds));
-		
-		var request = self.outboundIds[messageId];
-		Assert.cond(!is_undefined(request));
-		
-		self.outboundIds[messageId] = undefined;
-		
-		var resultJson = json[$ "result"];
-		
-		if (is_undefined(resultJson)) {
-			
-			var errorJson = json[$ "error"];
-			Assert.cond(!is_undefined(errorJson));
-			
-			var error = JsonRpcError.fromJson(errorJson);
-			return request.callback(undefined, error);
-			
-		}
-		
-		Assert.cond(!is_undefined(request.procedure.responseClass));
-		
-		var result = static_get(request.procedure.responseClass).fromJson(resultJson);
-		return request.callback(result, undefined);
-		
-	};
-	
-	/**
 	 * Retrieve a new unique message ID.
 	 * 
-	 * @private
+	 * @ignore
 	 * @returns {Real}
 	 */
 	static nextMessageId = function()
@@ -237,6 +244,9 @@ function JsonRpcRequest(procedure, callback) constructor {
 /**
  * An incoming request to a procedure
  * 
+ * @param {Real} messageId
+ * @param {Struct.JsonRpcProcedure} procedure
+ * @param {Struct.Message} params
  */
 function JsonRpcIncomingRequest(messageId, procedure, params) constructor {
 	self.messageId = messageId;

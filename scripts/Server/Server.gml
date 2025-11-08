@@ -9,12 +9,16 @@ function Server(networkServer) constructor {
 	CLASS_LOG;
 	
 	self.jsonRpc = new JsonRpc(ServerProcedures.procedureList, ClientProcedures.procedureList);
-	self.clients = [];
 	
 	self.networkServer = networkServer;
 	self.networkServer.events.on("connect", method(self, self.onNetConnect));
 	self.networkServer.events.on("disconnect", method(self, self.onNetDisconnect));
 	self.networkServer.events.on("data", method(self, self.onNetData));
+	
+	/**
+	 * @type {Map<String, Id.Socket>}
+	 */
+	self.clients = {};
 	
 	/**
 	 * Timer that runs indefinitely whilst the server is up, sending heartbeat pings to clients.
@@ -124,65 +128,89 @@ function Server(networkServer) constructor {
 	static onNetData = function(client, buffer) {
 		
 		var text = buffer_read(buffer, buffer_text);
-		var json;
-		
 		log.debug($"Packet from client `{client}`: `{text}`");
 		
-		try {
+		var json;
+		
+		try
+		{
 			json = json_parse(text);
-		} catch (_) {
-			log.error(new Err("TODO: Failed to parse inbound message from client!"));
+		}
+		catch (_)
+		{
+			log.warn($"Discarding non-JSON request from client: `{text}`");
 			return;
 		}
 		
-		var request;
-		
-		try {
-			request = self.jsonRpc.handleIncoming(json);
-		} catch (err) {
-			log.error(new Err("Error whilst handling incoming request", err));
+		if (!jsonRpc.isJsonRpc(json))
+		{
+			log.warn($"Discarding non-RPC request: `{json}`");
 			return;
 		}
 		
-		if (!is_instanceof(request, JsonRpcIncomingRequest)) {
-			return;
+		if (jsonRpc.isRequest(json))
+		{
+			var request;
+			
+			try
+			{
+				request = jsonRpc.handleIncomingRequest(json);
+			}
+			catch (err)
+			{
+				log.error($"Failed to parse incoming JSON-RPC request: {err}");
+				return;
+			}
+			
+			var procedureHandler = procedureHandlers[$ request.procedure.name];
+			
+			try
+			{
+				var response = procedureHandler(client, request.params);
+			}
+			catch (err)
+			{
+				if (is_instanceof(err, JsonRpcError))
+				{
+					// Method threw an error in parsing the request, return the error response to the client.
+					
+				}
+				else
+				{
+					// Actual error in the server, bubble it upwards.
+					throw err;
+				}
+			}
 		}
-		
-		var procedureHandler = procedureHandlers[$ request.procedure.name];
-		procedureHandler(client, request, request.params);
-		
-	};
-	
-	/**
-	 * @param {Id.Socket} client
-	 * @param {Struct.JsonRpcIncomingRequest} request
-	 * @param {Struct.ServerJoinRequest} params
-	 */
-	static onJoin = function(client, request, params) {
-		
-		var desiredUsername = params.desiredUsername;
-		log.info($"Client `{client}` joining with username {desiredUsername}");
-		
-		self.respond(client, request, new ServerJoinResponse(
-			client,
-			self.clients
-		));
-		
+		else if (jsonRpc.isResponse(json))
+		{
+			try
+			{
+				jsonRpc.handleIncomingResponse(json);
+			}
+			catch (err)
+			{
+				log.error(err);
+			}
+		}
 	};
 	
 	/**
 	 * List of registered handlers for procedures on the server.
 	 * @ignore
 	 */
-	static procedureHandlers = {};
+	procedureHandlers = {};
 	
-	if (struct_names_count(procedureHandlers) == 0) {
+	/**
+	 * @param {Id.Socket} client
+	 * @param {Struct.ServerJoinRequest} params
+	 * @returns {Struct.ServerJoinResponse}
+	 */
+	procedureHandlers[$ ServerProc.join.name] = function(client, params)
+	{
+		var username = params.username;
+		log.info($"Client `{client}` joining with username {username}");
 		
-		procedureHandlers[$ ServerProc.join.name] = self.onJoin;
-		
-		// Ensure all procedures have been registered.
-		Assert.eq(struct_names_count(procedureHandlers), array_length(ServerProc.procedureList));
-		
+		return new ServerJoinResponse_Success(["todo"]);
 	}
-	
 }
