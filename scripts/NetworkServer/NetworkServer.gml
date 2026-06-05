@@ -2,34 +2,40 @@
 #macro DEFAULT_PORT 27015
 
 /**
- * @param {Constant.SocketType} protocol
- * @param {Real} port
- * @param {Real} maxClients
+ * @param {Constant.SocketType} _protocol
+ * @param {Real} _port
+ * @param {Real} _maxClients
  */
-function NetworkServer(protocol, port, maxClients) constructor {
+function NetworkServer(_protocol, _port, _maxClients) constructor {
 	
 	CLASS_LOG;
 	
 	/**
 	 * @type {Constant.SocketType}
 	 */
-	self.protocol = protocol;
+	protocol = _protocol;
 	
 	/**
 	 * The port that this server listens on.
 	 */
-	self.port = port;
+	port = _port;
 	
 	/**
 	 * The maximum number of clients that may connect to this server.
 	 */
-	self.maxClients = maxClients;
+	maxClients = _maxClients;
 	
 	/**
 	 * The network socket associated with this server.
 	 * @type {Id.Socket|Undefined}
 	 */
-	self.socket = undefined;
+	socket = undefined;
+	
+	/**
+	 * List of connected client sockets.
+	 * @type {Array<Id.Socket>}
+	 */
+	clients = [];
 	
 	/**
 	 * Events for the server.
@@ -81,10 +87,8 @@ function NetworkServer(protocol, port, maxClients) constructor {
 	 * @param {Real} port
 	 */
 	static setPort = function(port) {
-		
 		Assert.eq(self.socket, undefined);
 		self.port = port;
-		
 	};
 	
 	/**
@@ -128,12 +132,14 @@ function NetworkServer(protocol, port, maxClients) constructor {
 	 * Dispose of this server. This MUST be called to correctly clean up the resources used.
 	 */
 	static dispose = function() {
-		
-		if (!is_undefined(self.socket)) {
-			network_destroy(self.socket);
-			NETMANAGER.deregister(self.socket);
+		if (is_undefined(socket)) {
+			return;
 		}
 		
+		network_destroy(socket);
+		NETMANAGER.deregister(socket);
+		
+		array_foreach(clients, network_destroy);
 	};
 	
 	/**
@@ -143,40 +149,34 @@ function NetworkServer(protocol, port, maxClients) constructor {
 	 * @param {Id.DsMap} map
 	 */
 	static handleNetMessage = function(map) {
-			
 		var client;
 		
 		switch (async_load[? "type"]) {
-	
 			case network_type_connect:
-			
 				client = async_load[? "socket"];
 				Assert.neq(client, self.socket);
+		
+				array_push(clients, client);	
 			
 				self.events.emit("connect", client);
-			
 			break;
 			
 			case network_type_data:
-			
 				client = async_load[? "id"];
 				Assert.neq(client, self.socket);
-			
 			
 				self.events.emit("data", client, async_load[? "buffer"]);
 			break;
 			
 			case network_type_disconnect:
-			
 				client = async_load[? "socket"];
 				Assert.neq(client, self.socket);
+				Assert.cond(array_delete_first(clients, client));
 			
 				self.events.emit("disconnect", client);
-			
+				network_destroy(client);
 			break;
-			
 		}
-		
 	};
 	
 }
