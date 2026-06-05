@@ -14,7 +14,8 @@ self.data = {
 		port: $"{DEFAULT_PORT}"
 	},
 	server: undefined,
-	client: undefined
+	client: undefined,
+	nextChatMessage: "",
 };
 
 self.mainMenuWindow = new HLGuiMenuWindow("Main Menu", 50, 50, 200, false, false, [
@@ -33,6 +34,92 @@ self.lobbyLoadingScreen = new HLGuiMenuWindow("Connecting!", display_get_gui_wid
 		var dotCount = ceil((sin(current_time / 240) + 1) * 3);
 		return $"Connecting{string_repeat(".", dotCount)}";
 	})
+]);
+
+chatBoxComponent = function() {
+	return new HLGuiRow([
+		HLGuiInput("Chat Message",
+			function() { return data.nextChatMessage },
+			function(nextChatMessage) { data.nextChatMessage = nextChatMessage }
+		),
+		new HLGuiButton("Send", function() {
+			var message = string_trim(data.nextChatMessage);
+			
+			if (message == "") {
+				return;
+			}
+			
+			// TODO: implement a nice server interface like the server has for clients.
+			data.client.sendNotification(ServerProc.sendChatMessage, new C2S_ChatMessage(ChatMessageVisibility.Global, message));
+			data.nextChatMessage = "";
+		})
+	]);
+}
+
+serverLobbyPlayerList = new HLGuiColumn([]);
+
+serverLobbyScreen = new HLGuiMenuWindow("Lobby", display_get_gui_width() / 2 - 300, 100, 600, false, false, [
+	new HLGuiColumn([
+		new HLGuiBorderBox(8, 8, [
+			new HLGuiRow([
+				HLGuiLabel("Hosting!"),
+				new HLGuiText(function() { return $"Port: {data.setupServerModal.port}" })
+			])
+		]),
+		new HLGuiBorderBox(8, 8, [serverLobbyPlayerList]),
+		chatBoxComponent()
+	])
+]);
+
+self.setupServerModal = new HLGuiMenuWindow("Host a Server", display_get_gui_width() / 2 - 150, display_get_gui_height() / 2 - 100, 300, false, false, [
+	new HLGuiColumn([
+		HLGuiInput("Port",
+			function() { return self.data.setupServerModal.port },
+			function(value) { self.data.setupServerModal.port = string_digits(value) }
+		),
+		new HLGuiRow([
+			new HLGuiButton("Cancel", function() {
+				self.fsm.change("mainMenu");
+			}),
+			new HLGuiButton("Host", function() {
+				self.fsm.change("T.startServer");
+			})
+		], 16)
+	], 16)
+]);
+
+self.clientLobbyPlayerList = new HLGuiColumn([]);
+self.clientLobbyScreen = new HLGuiMenuWindow("Lobby", display_get_gui_width() / 2 - 300, 100, 600, false, false, [
+	new HLGuiColumn([
+		new HLGuiBorderBox(8, 8, [
+			new HLGuiText(function() {
+				return $"IP: {self.data.joinServerModal.ip}, Port: {self.data.joinServerModal.port}";
+			})
+		]),
+		new HLGuiBorderBox(8, 8, [clientLobbyPlayerList]),
+		chatBoxComponent()
+	])
+]);
+
+self.joinServerModal = new HLGuiMenuWindow("Connect to a Server", display_get_gui_width() / 2 - 150, display_get_gui_height() / 2 - 100, 300, false, false, [
+	new HLGuiColumn([
+		HLGuiInput("IP",
+			function() { return self.data.joinServerModal.ip },
+			function(value) { self.data.joinServerModal.ip = value }
+		),
+		HLGuiInput("Port",
+			function() { return self.data.joinServerModal.port },
+			function(value) { self.data.joinServerModal.port = string_digits(value) }
+		),
+		new HLGuiRow([
+			new HLGuiButton("Cancel", function() {
+				self.fsm.change("mainMenu");
+			}),
+			new HLGuiButton("Join", function() {
+				self.fsm.change("T.clientConnect");
+			})
+		], 16)
+	], 16)
 ]);
 
 #region Main Menu
@@ -83,8 +170,8 @@ self.fsm.state("T.startServer", {
 		
 		var port = realOrUndefined(self.data.setupServerModal.port) ?? DEFAULT_PORT;
 		
-		self.data.server = new Server(new NetworkServer(network_socket_tcp, port, 8));
-		self.data.client = new Client(new NetworkClient(network_socket_tcp, "localhost", port));
+		self.data.server = new Server(new NetworkServer(network_socket_ws, port, 8));
+		self.data.client = new Client(new NetworkClient(network_socket_ws, "localhost", port), oGame.prefs.username);
 		
 		self.data.client.events.once("connect", function() {
 			self.fsm.change("serverLobbyScreen");
@@ -120,40 +207,6 @@ self.fsm.state("serverLobbyScreen", {
 	
 });
 
-self.serverLobbyPlayerList = new HLGuiColumn([]);
-self.serverLobbyScreen = new HLGuiMenuWindow("Lobby", display_get_gui_width() / 2 - 300, 100, 600, false, false, [
-	new HLGuiColumn([
-		new HLGuiBorderBox(8, 8, [
-			new HLGuiRow([
-				HLGuiLabel("Hosting!"),
-				new HLGuiText(function() {
-					return $"Port: {self.data.setupServerModal.port}";
-				})
-			])
-		]),
-		new HLGuiBorderBox(8, 8, [
-			self.serverLobbyPlayerList
-		]),
-	])
-]);
-
-self.setupServerModal = new HLGuiMenuWindow("Host a Server", display_get_gui_width() / 2 - 150, display_get_gui_height() / 2 - 100, 300, false, false, [
-	new HLGuiColumn([
-		HLGuiInput("Port",
-			function() { return self.data.setupServerModal.port },
-			function(value) { self.data.setupServerModal.port = string_digits(value) }
-		),
-		new HLGuiRow([
-			new HLGuiButton("Cancel", function() {
-				self.fsm.change("mainMenu");
-			}),
-			new HLGuiButton("Host", function() {
-				self.fsm.change("T.startServer");
-			})
-		], 16)
-	], 16)
-]);
-
 #endregion
 #region Client
 
@@ -175,14 +228,14 @@ self.fsm.state("T.clientConnect", {
 		var ip = self.data.joinServerModal.ip;
 		var port = realOrUndefined(self.data.joinServerModal.port) ?? DEFAULT_PORT;
 		
-		self.data.client = new Client(new NetworkClient(network_socket_tcp, ip, port));
+		self.data.client = new Client(new NetworkClient(network_socket_ws, ip, port), oGame.prefs.username);
 		
 		self.data.client.events.once("connect", function() {
 			self.fsm.change("clientLobbyScreen");
 		});
 		
-		self.data.client.events.once("connectFailed", function() {
-			self.log.error("Failed to connect to the server!");
+		self.data.client.events.once("connectFailed", function(error) {
+			self.log.error($"Failed to connect to the server: {error}");
 			self.fsm.change("T.clientDisconnect");
 		});
 		
@@ -215,41 +268,6 @@ self.fsm.state("clientLobbyScreen", {
 	}
 	
 });
-
-self.clientLobbyPlayerList = new HLGuiColumn([]);
-self.clientLobbyScreen = new HLGuiMenuWindow("Lobby", display_get_gui_width() / 2 - 300, 100, 600, false, false, [
-	new HLGuiColumn([
-		new HLGuiBorderBox(8, 8, [
-			new HLGuiText(function() {
-				return $"IP: {self.data.joinServerModal.ip}, Port: {self.data.joinServerModal.port}";
-			})
-		]),
-		new HLGuiBorderBox(8, 8, [
-			self.clientLobbyPlayerList
-		]),
-	])
-]);
-
-self.joinServerModal = new HLGuiMenuWindow("Connect to a Server", display_get_gui_width() / 2 - 150, display_get_gui_height() / 2 - 100, 300, false, false, [
-	new HLGuiColumn([
-		HLGuiInput("IP",
-			function() { return self.data.joinServerModal.ip },
-			function(value) { self.data.joinServerModal.ip = value }
-		),
-		HLGuiInput("Port",
-			function() { return self.data.joinServerModal.port },
-			function(value) { self.data.joinServerModal.port = string_digits(value) }
-		),
-		new HLGuiRow([
-			new HLGuiButton("Cancel", function() {
-				self.fsm.change("mainMenu");
-			}),
-			new HLGuiButton("Join", function() {
-				self.fsm.change("T.clientConnect");
-			})
-		], 16)
-	], 16)
-]);
 
 #endregion
 

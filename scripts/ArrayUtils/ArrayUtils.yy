@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Server",
+  "%Name":"ArrayUtils",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Server",
+  "name":"ArrayUtils",
   "parent":{
-    "name":"Network",
-    "path":"folders/Network.yy",
+    "name":"Utils",
+    "path":"folders/Utils.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

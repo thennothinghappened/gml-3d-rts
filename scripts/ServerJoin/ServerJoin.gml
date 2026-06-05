@@ -2,88 +2,52 @@
 /**
  * Information sent from a client to a server upon connecting.
  * 
- * @param {String} desiredUsername The desired username the client wishes to use.
+ * @param {String} _desiredUsername The desired username the client wishes to use.
  */
-function ServerJoinRequest(
-	desiredUsername
-) : Message() constructor {
+function C2S_ConnectBeginHandshake(_desiredUsername) : Message() constructor {
+	desiredUsername = _desiredUsername;
 	
-	self.desiredUsername = desiredUsername;
-	
-	/**
-	 * Convert this message to serialisable JSON that may be safely stringified.
-	 * @returns {Any}
-	 */
 	static toJson = function() {
-		return { desiredUsername };
-	};
+		return self;
+	}
 	
-	/**
-	 * Deserialise this message from JSON.
-	 * 
-	 * ### Exceptions
-	 * 
-	 * Throws if the message is malformed.
-	 * 
-	 * @param {Any} json The serialised JSON data to parse.
-	 * @returns {Struct.ServerJoinRequest}
-	 */
 	static fromJson = function(json) {
-		
 		Assert.cond(is_struct(json));
 		Assert.cond(is_string(json[$ "desiredUsername"]));
 		
-		return new ServerJoinRequest(json.desiredUsername);
-		
-	};
-	
+		return new C2S_ConnectBeginHandshake(json.desiredUsername);
+	}
 }
 
-new ServerJoinRequest("");
+new C2S_ConnectBeginHandshake("");
 
 /**
  * Information sent from the server to a newly connecting client.
  * 
- * @param {Id.Socket} yourId Unique identifier assigned by the server for this client.
- * @param {Array<Id.Socket>} clientList List of client IDs in the server.
+ * @param {Id.Socket} _yourId Unique identifier assigned by the server for this client.
+ * @param {Array<Struct>} _clientList List of client IDs in the server.
  */
-function ServerJoinResponse(
-	yourId,
-	clientList
-) : Message() constructor {
+function S2C_ConnectSuccess(_yourId, _clientList) : Message() constructor {
+	yourId = _yourId;
+	clientList = _clientList;
 	
-	self.yourId = yourId;
-	self.clientList = clientList;
-	
-	/**
-	 * Convert this message to serialisable JSON that may be safely stringified.
-	 * @returns {Any}
-	 */
 	static toJson = function() {
-		return { yourId, clientList };
-	};
+		return self;
+	}
 	
-	/**
-	 * Deserialise this message from JSON.
-	 * 
-	 * ### Exceptions
-	 * 
-	 * Throws if the message is malformed.
-	 * 
-	 * @param {Any} json The serialised JSON data to parse.
-	 * @returns {Struct.ServerJoinResponse}
-	 */
 	static fromJson = function(json) {
-		
 		Assert.cond(is_struct(json));
 		Assert.cond(is_real(json[$ "yourId"]));
 		Assert.cond(is_array(json[$ "clientList"]));
-		Assert.cond(array_all(json[$ "clientList"], is_real));
 		
-		return new ServerJoinResponse(json.yourId, json.clientList);
+		array_foreach(json[$ "clientList"], function(clientInfo) {
+			Assert.cond(is_struct(clientInfo));
+			Assert.cond(is_real(clientInfo.id));
+			Assert.cond(is_string(clientInfo[$ "username"]) or is_undefined(clientInfo[$ "username"]));
+		});
 		
-	};
-	
+		return new S2C_ConnectSuccess(json.yourId, json.clientList);
+	}
 }
 
-new ServerJoinResponse(0, []);
+new S2C_ConnectSuccess(0, []);

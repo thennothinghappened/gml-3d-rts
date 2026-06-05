@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"Message",
   "parent":{
-    "name":"Network",
-    "path":"folders/Scripts/Network.yy",
+    "name":"Transport",
+    "path":"folders/Network/Transport.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

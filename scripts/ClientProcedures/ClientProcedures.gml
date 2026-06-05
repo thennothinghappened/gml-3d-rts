@@ -1,32 +1,29 @@
 
 /**
- * Shorthand macro for accessing the list of client procedures.
- * 
- * This basically just exists because the GameMaker IDE's Code Editor 2 refuses to autocomplete constructor names
- * if the previously typed keyword was not `new`.
- */
-#macro ClientProc ClientProcedures
-
-/**
  * The list of procedures on a game client.
  */
-function ClientProcedures() constructor {
-	
-	/**
-	 * The server will periodically send clients a heartbeat message at an agreed upon interval.
-	 * 
-	 * @see {HEARTBEAT_MESSAGE_INTERVAL_MILLISECONDS}
-	 * @see {HEARTBEAT_MESSAGE_MAX_MISS_COUNT}
-	 */
-	static heartbeat = new JsonRpcProcedure("heartbeat", ClientHeartbeatRequest, ClientHeartbeatResponse);
-	
-	/**
-	 * The full list of procedures, to register against.
-	 */
-	static procedureList = [
-		heartbeat
-	];
-	
-}
+#macro ClientProc __clientProcedures()
 
-new ClientProcedures();
+function __clientProcedures() {
+	static procedures = {
+		/**
+		 * The server will periodically send clients a heartbeat message at an agreed upon interval.
+		 * 
+		 * @see {HEARTBEAT_MESSAGE_INTERVAL_MILLISECONDS}
+		 * @see {HEARTBEAT_MESSAGE_MAX_MISS_COUNT}
+		 */
+		heartbeat: new JsonRpcProcedure("heartbeat", S2C_Heartbeat, C2S_HeartbeatReply),
+		
+		/**
+		 * Another player has joined the server.
+		 */
+		otherPlayerJoined: new JsonRpcProcedure("otherPlayerJoined", S2C_OtherPlayerJoined, undefined),
+		
+		/**
+		 * A player has written a message to the chat.
+		 */
+		addChatMessage: new JsonRpcProcedure("addChatMessage", S2C_ChatMessageAdded, undefined),
+	};
+	
+	return procedures;
+}

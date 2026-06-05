@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"ServerJoin",
   "parent":{
-    "name":"Procedures",
-    "path":"folders/Scripts/Network/Server/Procedures.yy",
+    "name":"RPC",
+    "path":"folders/Network/RPC.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

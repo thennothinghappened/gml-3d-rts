@@ -6,7 +6,7 @@
   "name":"realOrUndefined",
   "parent":{
     "name":"Utils",
-    "path":"folders/Scripts/Utils.yy",
+    "path":"folders/Utils.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

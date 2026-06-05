@@ -2,35 +2,53 @@
 /**
  * A game client!
  * 
- * @param {Struct.NetworkClient} networkClient The underlying network transport client.
+ * @param {Struct.NetworkClient} _networkClient The underlying network transport client.
+ * @param {String} _username
  */
-function Client(networkClient) constructor {
-	
+function Client(_networkClient, _username) constructor {
 	CLASS_LOG;
 	
-	self.jsonRpc = new JsonRpc(ClientProc.procedureList, ServerProc.procedureList);
-	self.events = new EventEmitter("connect", "connectFailed", "disconnect");
+	jsonRpc = new JsonRpc(ClientProc, ServerProc);
+	events = new EventEmitter("connect", "connectFailed", "disconnect");
 	
-	self.networkClient = networkClient;
-	self.networkClient.events.on("connect", method(self, self.onNetConnect));
-	self.networkClient.events.on("connectFailed", method(self, self.onNetConnectFailed));
-	self.networkClient.events.on("disconnect", method(self, self.onNetDisconnect));
-	self.networkClient.events.on("data", method(self, self.onNetData));
+	networkClient = _networkClient;
+	username = _username;
+	
+	clientId = undefined;
+	FEATHERHINT { clientId = 0 }
+	
+	clientList = undefined;
+	FEATHERHINT { clientList = [{ id: 0, username: "orca" }] }
 	
 	/**
 	 * Attempt to create a connection with the network client.
 	 */
 	static connect = function() {
-		self.networkClient.connect();
-	};
+		networkClient.connect();
+	}
 	
 	/**
 	 * Dispose of this client.
 	 * This method **MUST** be called to clean up the resources used by this client.
 	 */
 	static dispose = function() {
-		self.networkClient.dispose();
-	};
+		networkClient.dispose();
+	}
+	
+	/**
+	 * Get the name of another player by their ID.
+	 * 
+	 * @pure
+	 * @param {Id.Socket} clientId
+	 * @returns {String}
+	 */
+	static getClientName = function(clientId) {
+		for (var i = 0; i < array_length(clientList); i ++) {
+			if (clientList[i].id == clientId) {
+				return clientList[i].username;
+			}
+		}
+	}
 	
 	/**
 	 * Call a remote procedure on the server.
@@ -40,9 +58,20 @@ function Client(networkClient) constructor {
 	 * @param {Struct.Message} params The parameters for the procedure.
 	 * @param {Function} callback `(result: T|Undefined, error: E|Undefined) -> Undefined` \| A function to be executed upon receiving a response to this request, unless this is a notification.
 	 */
-	static call = function(procedure, params, callback) {
-		self.networkClient.sendJson(self.jsonRpc.createRequest(procedure, params, callback));
-	};
+	static sendRequest = function(procedure, params, callback) {
+		networkClient.sendJson(jsonRpc.createRequest(procedure, params, callback));
+	}
+	
+	/**
+	 * Send a notification to the server without expecting a response.
+	 * 
+	 * @private
+	 * @param {Struct.JsonRpcProcedure} procedure
+	 * @param {Struct.Message} params
+	 */
+	static sendNotification = function(procedure, params) {
+		networkClient.sendJson(jsonRpc.createNotification(procedure, params));
+	}
 	
 	/**
 	 * Respond to a remote procedure call from the server, with the specified response data.
@@ -51,60 +80,36 @@ function Client(networkClient) constructor {
 	 * @param {Struct.JsonRpcIncomingRequest} request The request for which we are responding to.
 	 * @param {Struct.Message} response The response data to send.
 	 */
-	static respond = function(request, response) {
-		self.networkClient.sendJson(self.jsonRpc.createResponse(request, response));
-	};
+	static sendResponse = function(request, response) {
+		networkClient.sendJson(jsonRpc.createResponse(request, response));
+	}
 	
-	/**
-	 * Respond to server heartbeat pings.
-	 * 
-	 * @param {Struct.JsonRpcIncomingRequest} request
-	 * @param {Struct.ServerJoinRequest} params
-	 */
-	static onHeartbeat = function(request, params) {
-		self.respond(request, new ClientHeartbeatResponse());
-	};
+	#region Network event handlers
 	
-	/**
-	 * Called upon successful connection to the server.
-	 * @ignore
-	 */
-	static onNetConnect = function() {
-		self.call(ServerProc.join, new ServerJoinRequest(oGame.prefs.username), function(result, error) {
-			
+	networkClient.events.on("connect", function() {
+		sendRequest(ServerProc.join, new C2S_ConnectBeginHandshake(username), function(result, error) {
 			if (!is_undefined(error)) {
-				return self.events.emit("connectFailed", error);
+				return events.emit("connectFailed", error);
 			}
 			
-			return self.events.emit("connect", result);
+			clientId = result.yourId;
+			clientList = result.clientList;
 			
+			return events.emit("connect", result);
 		});
-	};
+	});
 	
-	/**
-	 * Called upon failure to connect to the server.
-	 * @ignore
-	 */
-	static onNetConnectFailed = function() {
+	networkClient.events.on("connectFailed", function() {
 		log.error("Failed to connect to the server.");
-		self.events.emit("connectFailed");
-	};
+		events.emit("connectFailed");
+	});
 	
-	/**
-	 * Called upon disconnection from the server.
-	 * @ignore
-	 */
-	static onNetDisconnect = function() {
+	networkClient.events.on("disconnect", function() {
 		log.error("Disconnected from the server.");
-		self.events.emit("disconnect");
-	};
+		events.emit("disconnect");
+	});
 	
-	/**
-	 * Called upon receiving a data packet from the server.
-	 * @ignore
-	 */
-	static onNetData = function(buffer) {
-		
+	networkClient.events.on("data", function(buffer) {
 		var text = buffer_read(buffer, buffer_text);
 		var json;
 		
@@ -132,8 +137,43 @@ function Client(networkClient) constructor {
 		
 		var procedureHandler = procedureHandlers[$ request.procedure.name];
 		procedureHandler(request, request.params);
+	});
+	
+	#endregion
+	#region RPC request handlers
+	
+	/**
+	 * Respond to server heartbeat pings.
+	 * 
+	 * @param {Struct.JsonRpcIncomingRequest} request
+	 * @param {Struct.S2C_Heartbeat} params
+	 */
+	static onHeartbeat = function(request, params) {
+		sendResponse(request, new C2S_HeartbeatReply());
+	}
+	
+	/**
+	 * @param {Struct.JsonRpcIncomingRequest} request
+	 * @param {Struct.S2C_OtherPlayerJoined} params
+	 */
+	static onOtherPlayerJoined = function(request, params) {
+		array_push(clientList, {
+			id: params.id,
+			username: params.username,
+		});
 		
-	};
+		log.info($"{params.username} has joined the server.");
+	}
+	
+	/**
+	 * @param {Struct.JsonRpcIncomingRequest} request
+	 * @param {Struct.S2C_ChatMessageAdded} params
+	 */
+	static onAddChatMessage = function(request, params) {
+		log.info($"{getClientName(params.senderId)} said: {params.message}");
+	}
+	
+	#endregion
 	
 	/**
 	 * List of registered handlers for procedures on the client.
@@ -142,12 +182,11 @@ function Client(networkClient) constructor {
 	static procedureHandlers = {};
 	
 	if (struct_names_count(procedureHandlers) == 0) {
-		
-		procedureHandlers[$ ClientProc.heartbeat.name] = self.onHeartbeat;
+		procedureHandlers[$ ClientProc.heartbeat.name] = onHeartbeat;
+		procedureHandlers[$ ClientProc.otherPlayerJoined.name] = onOtherPlayerJoined;
+		procedureHandlers[$ ClientProc.addChatMessage.name] = onAddChatMessage;
 		
 		// Ensure all procedures have been registered.
-		Assert.eq(struct_names_count(procedureHandlers), array_length(ClientProc.procedureList));
-		
+		Assert.eq(struct_get_names(procedureHandlers), struct_get_names(ClientProc));
 	}
-	
 }

@@ -6,7 +6,7 @@
   "name":"NetworkClient",
   "parent":{
     "name":"Transport",
-    "path":"folders/Scripts/Network/Transport.yy",
+    "path":"folders/Network/Transport.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

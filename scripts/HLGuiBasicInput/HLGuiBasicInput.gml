@@ -13,7 +13,7 @@ function HLGuiBasicInput(get, set) : HLGuiWidget() constructor {
 	self.caretColumn = 0;
 	
 	static measureHeight = function(width) {
-		return string_height_ext(self.text, -1, width);
+		return max(string_height_ext(self.text, -1, width), string_height("0"));
 	};
 	
 	static draw = function(x, y, width, height) {

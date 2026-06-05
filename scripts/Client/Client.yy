@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"Client",
   "parent":{
-    "name":"Client",
-    "path":"folders/Scripts/Network/Client.yy",
+    "name":"Network",
+    "path":"folders/Network.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

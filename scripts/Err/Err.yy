@@ -6,7 +6,7 @@
   "name":"Err",
   "parent":{
     "name":"Errors",
-    "path":"folders/Scripts/Utils/Errors.yy",
+    "path":"folders/Utils/Errors.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

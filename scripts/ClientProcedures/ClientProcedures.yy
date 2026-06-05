@@ -5,8 +5,8 @@
   "isDnD":false,
   "name":"ClientProcedures",
   "parent":{
-    "name":"Client",
-    "path":"folders/Scripts/Network/Client.yy",
+    "name":"RPC",
+    "path":"folders/Network/RPC.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

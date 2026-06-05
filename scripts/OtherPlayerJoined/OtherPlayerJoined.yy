@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"ClientHeartbeat",
+  "%Name":"OtherPlayerJoined",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"ClientHeartbeat",
+  "name":"OtherPlayerJoined",
   "parent":{
-    "name":"Procedures",
-    "path":"folders/Scripts/Network/Client/Procedures.yy",
+    "name":"RPC",
+    "path":"folders/Network/RPC.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

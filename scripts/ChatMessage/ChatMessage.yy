@@ -1,12 +1,12 @@
 {
   "$GMScript":"v1",
-  "%Name":"Server",
+  "%Name":"ChatMessage",
   "isCompatibility":false,
   "isDnD":false,
-  "name":"Server",
+  "name":"ChatMessage",
   "parent":{
-    "name":"Network",
-    "path":"folders/Network.yy",
+    "name":"RPC",
+    "path":"folders/Network/RPC.yy",
   },
   "resourceType":"GMScript",
   "resourceVersion":"2.0",

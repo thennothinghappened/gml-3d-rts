@@ -2,21 +2,12 @@
 /**
  * A JSON-RPC v2.0 client AND server, as specified at [https://www.jsonrpc.org/specification](https://www.jsonrpc.org/specification)
  * 
- * @param {Array<Struct.JsonRpcProcedure>} localProcedures Procedures we provide that may be called.
- * @param {Array<Struct.JsonRpcProcedure>} remoteProcedures Procedures that we can call on the remote.
+ * @param {Struct<String, Struct.JsonRpcProcedure>} _localProcedureMap Procedures we provide that may be called.
+ * @param {Struct<String, Struct.JsonRpcProcedure>} _remoteProcedureMap Procedures that we can call on the remote.
  */
-function JsonRpc(localProcedures, remoteProcedures) constructor {
-	
-	self.localProcedureMap = {};
-	self.remoteProcedureMap = {};
-	
-	array_foreach(localProcedures, function(procedure) {
-		self.localProcedureMap[$ procedure.name] = procedure;
-	});
-	
-	array_foreach(remoteProcedures, function(procedure) {
-		self.remoteProcedureMap[$ procedure.name] = procedure;
-	});
+function JsonRpc(_localProcedureMap, _remoteProcedureMap) constructor {
+	localProcedureMap = _localProcedureMap;
+	remoteProcedureMap = _remoteProcedureMap;
 	
 	/**
 	 * List of identifiers currently in use for outbound requests.
@@ -26,7 +17,7 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	 * 
 	 * @type {Array<Struct.JsonRpcRequest>}
 	 */
-	self.outboundIds = [];
+	outboundIds = [];
 	
 	/**
 	 * Handle an incoming message, calling the appropriate procedure.
@@ -39,7 +30,6 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	 * @returns {Struct.JsonRpcIncomingRequest|Undefined}
 	 */
 	static handleIncoming = function(json) {
-		
 		Assert.cond(is_struct(json));
 		Assert.eq(json[$ "jsonrpc"], "2.0");
 		
@@ -50,13 +40,10 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 		} else {
 			return self.handleResponse(messageId, json);
 		}
-		
 	};
 	
 	/**
 	 * Create a JSON-RPC request to the remote to perform the given procedure.
-	 * 
-	 * If the procedure does not specify a response type, no ID is given, and thus the message is a notification.
 	 * 
 	 * ### Exceptions
 	 * 
@@ -64,27 +51,47 @@ function JsonRpc(localProcedures, remoteProcedures) constructor {
 	 * 
 	 * @param {Struct.JsonRpcProcedure} procedure The procedure to call.
 	 * @param {Struct.Message} params The parameters for the procedure.
-	 * @param {Function|Undefined} callback `(result: T|Undefined, error: E|Undefined) -> Undefined` \| A function to be executed upon receiving a response to this request, unless this is a notification.
+	 * @param {Function} callback `(result: T|Undefined, error: E|Undefined) -> Undefined` \| A function to be executed upon receiving a response to this request, unless this is a notification.
 	 */
 	static createRequest = function(procedure, params, callback) {
-		Assert.cond(is_instanceof(params, procedure.requestClass), "Parameters for this request must match the request class kind");
+		Assert.notUndefined(procedure.responseClass);
 		
-		var messageId = undefined;
+		if (procedure.requestClass != undefined) {
+			Assert.cond(is_instanceof(params, procedure.requestClass), "Parameters for this request must match the request class kind");
+		} else {
+			Assert.eq(params, undefined);
+		}
 		
-		// If this message expects a response, give it a unique tracking ID.
-		if (procedure.responseClass != undefined)
-		{
-			messageId = self.nextMessageId();
-			self.outboundIds[messageId] = new JsonRpcRequest(procedure, callback);
+		var messageId = nextMessageId();
+		self.outboundIds[messageId] = new JsonRpcRequest(procedure, callback);
+		
+		return {
+			jsonrpc: "2.0",
+			method: procedure.name,
+			params: params.toJson(),
+			id: messageId,
+		};
+	};
+	
+	/**
+	 * Create a JSON-RPC notification message for the given procedure and parameters.
+	 * 
+	 * @param {Struct.JsonRpcProcedure} procedure
+	 * @param {Struct.Message} params
+	 */
+	static createNotification = function(procedure, params) {
+		if (procedure.requestClass != undefined) {
+			Assert.cond(is_instanceof(params, procedure.requestClass), "Parameters for this notification must match the request class kind");
+		} else {
+			Assert.eq(params, undefined);
 		}
 		
 		return {
 			jsonrpc: "2.0",
 			method: procedure.name,
 			params: params.toJson(),
-			id: messageId
 		};
-	};
+	}
 	
 	/**
 	 * Create a JSON-RPC response to a procedure call from the remote.
